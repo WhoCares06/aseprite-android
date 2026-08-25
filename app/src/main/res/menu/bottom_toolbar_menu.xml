@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/btn_prev_frame"
+        android:icon="@drawable/ic_skip_previous"
+        android:title="@string/zoom_out"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/frame_info"
+        android:title="1 / 1"
+        android:enabled="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_next_frame"
+        android:icon="@drawable/ic_skip_next"
+        android:title="@string/zoom_in"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_play"
+        android:icon="@drawable/ic_play"
+        android:title="Play"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_onion_skin"
+        android:icon="@drawable/ic_visibility"
+        android:title="@string/onion_skin"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_grid"
+        android:icon="@drawable/ic_grid"
+        android:title="@string/grid"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_zoom_out"
+        android:icon="@drawable/ic_zoom_out"
+        android:title="@string/zoom_out"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/btn_zoom_in"
+        android:icon="@drawable/ic_zoom_in"
+        android:title="@string/zoom_in"
+        app:showAsAction="ifRoom" />
+
+</menu>
