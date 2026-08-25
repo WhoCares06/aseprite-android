@@ -18,25 +18,25 @@ env:
 
 jobs:
   build-skia:
-    name: Build Skia for Android
+    name: Build Skia for Android (${{ matrix.android_abi }})
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     strategy:
+      fail-fast: false
       matrix:
-        target_cpu: [arm64, arm, x86, x64]
         include:
           - target_cpu: arm64
             android_abi: arm64-v8a
             gn_args: 'target_os="android" target_cpu="arm64" is_debug=false'
-          - target_cpu: arm
-            android_abi: armeabi-v7a
-            gn_args: 'target_os="android" target_cpu="arm" is_debug=false'
-          - target_cpu: x86
-            android_abi: x86
-            gn_args: 'target_os="android" target_cpu="x86" is_debug=false'
-          - target_cpu: x64
-            android_abi: x86_64
-            gn_args: 'target_os="android" target_cpu="x64" is_debug=false'
+          # - target_cpu: arm
+          #   android_abi: armeabi-v7a
+          #   gn_args: 'target_os="android" target_cpu="arm" is_debug=false'
+          # - target_cpu: x86
+          #   android_abi: x86
+          #   gn_args: 'target_os="android" target_cpu="x86" is_debug=false'
+          # - target_cpu: x64
+          #   android_abi: x86_64
+          #   gn_args: 'target_os="android" target_cpu="x64" is_debug=false'
     steps:
       - name: Checkout Skia
         uses: actions/checkout@v4
@@ -46,10 +46,15 @@ jobs:
           path: skia
           submodules: false
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 git clang lld gn ninja-build
+
       - name: Sync Skia deps
         working-directory: skia
         run: |
-          python tools/git-sync-deps
+          python3 tools/git-sync-deps
 
       - name: Setup GN
         working-directory: skia
@@ -64,15 +69,13 @@ jobs:
       - name: Build Skia
         working-directory: skia
         run: |
-          ninja -C out/android_${{ matrix.target_cpu }}
+          ninja -C out/android_${{ matrix.target_cpu }} -j$(nproc)
 
       - name: Package Skia artifacts
         working-directory: skia
         run: |
           mkdir -p ../skia-artifacts/${{ matrix.android_abi }}
-          cp -r out/android_${{ matrix.target_cpu }}/libskia.a ../skia-artifacts/${{ matrix.android_abi }}/
-          cp -r out/android_${{ matrix.target_cpu }}/obj ../skia-artifacts/${{ matrix.android_abi }}/
-          # Copy headers
+          cp out/android_${{ matrix.target_cpu }}/libskia.a ../skia-artifacts/${{ matrix.android_abi }}/
           mkdir -p ../skia-artifacts/${{ matrix.android_abi }}/include
           cp -r include/* ../skia-artifacts/${{ matrix.android_abi }}/include/
 
@@ -116,7 +119,7 @@ jobs:
 
       - name: Configure Skia paths
         run: |
-          for abi in arm64-v8a armeabi-v7a x86 x86_64; do
+          for abi in arm64-v8a; do
             if [ -d "skia-prebuilt/$abi" ]; then
               echo "SKIA_DIR_${abi//-/_}=$(pwd)/skia-prebuilt/$abi" >> $GITHUB_ENV
             fi
@@ -140,12 +143,8 @@ jobs:
           # Skia paths per ABI
           set(SKIA_DIRS
             arm64-v8a "$ENV{SKIA_DIR_ARM64_V8A}"
-            armeabi-v7a "$ENV{SKIA_DIR_ARMEABI_V7A}"
-            x86 "$ENV{SKIA_DIR_X86}"
-            x86_64 "$ENV{SKIA_DIR_X86_64}"
           )
 
-          # Find current ABI's Skia
           foreach(abi_path ${SKIA_DIRS})
             list(GET abi_path 0 abi)
             list(GET abi_path 1 path)
