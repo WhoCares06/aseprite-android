@@ -20,23 +20,14 @@ jobs:
   build-skia:
     name: Build Skia for Android (${{ matrix.android_abi }})
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
         include:
           - target_cpu: arm64
             android_abi: arm64-v8a
-            gn_args: 'target_os="android" target_cpu="arm64" is_debug=false'
-          # - target_cpu: arm
-          #   android_abi: armeabi-v7a
-          #   gn_args: 'target_os="android" target_cpu="arm" is_debug=false'
-          # - target_cpu: x86
-          #   android_abi: x86
-          #   gn_args: 'target_os="android" target_cpu="x86" is_debug=false'
-          # - target_cpu: x64
-          #   android_abi: x86_64
-          #   gn_args: 'target_os="android" target_cpu="x64" is_debug=false'
+            gn_args: 'target_os="android" target_cpu="arm64" is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false'
     steps:
       - name: Checkout Skia
         uses: actions/checkout@v4
@@ -46,7 +37,22 @@ jobs:
           path: skia
           submodules: false
 
+      - name: Setup cache key
+        run: |
+          echo "CACHE_KEY=skia-${{ matrix.android_abi }}-$(cd skia && git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Restore Skia build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            skia/out/android_${{ matrix.target_cpu }}
+            skia/.git
+          key: ${{ env.CACHE_KEY }}
+          restore-keys: |
+            skia-${{ matrix.android_abi }}-
+
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y python3 git clang lld gn ninja-build
@@ -84,7 +90,7 @@ jobs:
         with:
           name: skia-${{ matrix.android_abi }}
           path: skia-artifacts/${{ matrix.android_abi }}
-          retention-days: 7
+          retention-days: 30
 
   build-android:
     name: Build Android App
