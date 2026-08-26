@@ -5,7 +5,6 @@
 
 #include <jni.h>
 #include <string>
-#include <android/bitmap.h>
 
 // Forward declare Aseprite types
 namespace doc {
@@ -39,9 +38,6 @@ public:
 
     // Internal: get sprite pointer (used by JNI layer)
     doc::Sprite* getSprite(uintptr_t spritePtr);
-
-    // Frame rendering
-    jobject renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameIndex);
 
     // Layer operations
     uintptr_t createLayer(uintptr_t spritePtr, const char* name);

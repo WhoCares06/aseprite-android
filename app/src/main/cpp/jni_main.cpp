@@ -108,8 +108,8 @@ extern "C" {
 
 // Initialize
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_initialize(JNIEnv* env, jobject thiz) {
-    LOGD("JNI: initialize");
+Java_com_aseprite_android_AsepriteCore_nativeInitialize(JNIEnv* env, jclass clazz) {
+    LOGD("JNI: nativeInitialize");
     AsepriteBridge* bridge = getBridge();
     if (!bridge->initialize()) {
         LOGE("Failed to initialize Aseprite bridge");
@@ -120,8 +120,8 @@ Java_com_aseprite_android_AsepriteCore_initialize(JNIEnv* env, jobject thiz) {
 
 // Shutdown
 JNIEXPORT void JNICALL
-Java_com_aseprite_android_AsepriteCore_shutdown(JNIEnv* env, jobject thiz) {
-    LOGD("JNI: shutdown");
+Java_com_aseprite_android_AsepriteCore_nativeShutdown(JNIEnv* env, jclass clazz) {
+    LOGD("JNI: nativeShutdown");
     if (g_bridge) {
         g_bridge->shutdown();
         g_bridge.reset();
@@ -130,17 +130,17 @@ Java_com_aseprite_android_AsepriteCore_shutdown(JNIEnv* env, jobject thiz) {
 
 // Create sprite
 JNIEXPORT jlong JNICALL
-Java_com_aseprite_android_AsepriteCore_createSprite(JNIEnv* env, jobject thiz, jint width, jint height, jint colorMode) {
-    LOGD("JNI: createSprite %dx%d mode=%d", width, height, colorMode);
+Java_com_aseprite_android_AsepriteCore_nativeCreateSprite(JNIEnv* env, jclass clazz, jint width, jint height, jint colorMode) {
+    LOGD("JNI: nativeCreateSprite %dx%d mode=%d", width, height, colorMode);
     AsepriteBridge* bridge = getBridge();
     return ptrToJlong(bridge->createSprite(static_cast<int>(width), static_cast<int>(height), static_cast<int>(colorMode)));
 }
 
 // Open sprite
 JNIEXPORT jlong JNICALL
-Java_com_aseprite_android_AsepriteCore_openSprite(JNIEnv* env, jobject thiz, jstring filePath) {
+Java_com_aseprite_android_AsepriteCore_nativeOpenSprite(JNIEnv* env, jclass clazz, jstring filePath) {
     const char* path = env->GetStringUTFChars(filePath, nullptr);
-    LOGD("JNI: openSprite %s", path);
+    LOGD("JNI: nativeOpenSprite %s", path);
     AsepriteBridge* bridge = getBridge();
     jlong result = ptrToJlong(bridge->openSprite(path));
     env->ReleaseStringUTFChars(filePath, path);
@@ -149,9 +149,9 @@ Java_com_aseprite_android_AsepriteCore_openSprite(JNIEnv* env, jobject thiz, jst
 
 // Save sprite
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_saveSprite(JNIEnv* env, jobject thiz, jlong spritePtr, jstring filePath) {
+Java_com_aseprite_android_AsepriteCore_nativeSaveSprite(JNIEnv* env, jclass clazz, jlong spritePtr, jstring filePath) {
     const char* path = env->GetStringUTFChars(filePath, nullptr);
-    LOGD("JNI: saveSprite %s", path);
+    LOGD("JNI: nativeSaveSprite %s", path);
     AsepriteBridge* bridge = getBridge();
     jboolean result = bridge->saveSprite(jlongToPtr(spritePtr), path) ? JNI_TRUE : JNI_FALSE;
     env->ReleaseStringUTFChars(filePath, path);
@@ -160,36 +160,36 @@ Java_com_aseprite_android_AsepriteCore_saveSprite(JNIEnv* env, jobject thiz, jlo
 
 // Get width
 JNIEXPORT jint JNICALL
-Java_com_aseprite_android_AsepriteCore_getWidth(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeGetWidth(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getWidth(jlongToPtr(spritePtr)));
 }
 
 // Get height
 JNIEXPORT jint JNICALL
-Java_com_aseprite_android_AsepriteCore_getHeight(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeGetHeight(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getHeight(jlongToPtr(spritePtr)));
 }
 
 // Get frame count
 JNIEXPORT jint JNICALL
-Java_com_aseprite_android_AsepriteCore_getFrameCount(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeGetFrameCount(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getFrameCount(jlongToPtr(spritePtr)));
 }
 
 // Get layer count
 JNIEXPORT jint JNICALL
-Java_com_aseprite_android_AsepriteCore_getLayerCount(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeGetLayerCount(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getLayerCount(jlongToPtr(spritePtr)));
 }
 
 // Render frame - using Bitmap.createBitmap via JNI (no AndroidBitmap needed)
 JNIEXPORT jobject JNICALL
-Java_com_aseprite_android_AsepriteCore_renderFrame(JNIEnv* env, jobject thiz, jlong spritePtr, jint frameIndex) {
-    LOGD("JNI: renderFrame %d", frameIndex);
+Java_com_aseprite_android_AsepriteCore_nativeRenderFrame(JNIEnv* env, jclass clazz, jlong spritePtr, jint frameIndex) {
+    LOGD("JNI: nativeRenderFrame %d", frameIndex);
     AsepriteBridge* bridge = getBridge();
     doc::Sprite* sprite = bridge->getSprite(jlongToPtr(spritePtr));
     if (!sprite) return nullptr;
@@ -206,9 +206,9 @@ Java_com_aseprite_android_AsepriteCore_renderFrame(JNIEnv* env, jobject thiz, jl
 
 // Create layer
 JNIEXPORT jlong JNICALL
-Java_com_aseprite_android_AsepriteCore_createLayer(JNIEnv* env, jobject thiz, jlong spritePtr, jstring name) {
+Java_com_aseprite_android_AsepriteCore_nativeCreateLayer(JNIEnv* env, jclass clazz, jlong spritePtr, jstring name) {
     const char* layerName = env->GetStringUTFChars(name, nullptr);
-    LOGD("JNI: createLayer %s", layerName);
+    LOGD("JNI: nativeCreateLayer %s", layerName);
     AsepriteBridge* bridge = getBridge();
     jlong result = ptrToJlong(bridge->createLayer(jlongToPtr(spritePtr), layerName));
     env->ReleaseStringUTFChars(name, layerName);
@@ -217,61 +217,61 @@ Java_com_aseprite_android_AsepriteCore_createLayer(JNIEnv* env, jobject thiz, jl
 
 // Delete layer
 JNIEXPORT void JNICALL
-Java_com_aseprite_android_AsepriteCore_deleteLayer(JNIEnv* env, jobject thiz, jlong spritePtr, jint layerIndex) {
-    LOGD("JNI: deleteLayer %d", layerIndex);
+Java_com_aseprite_android_AsepriteCore_nativeDeleteLayer(JNIEnv* env, jclass clazz, jlong spritePtr, jint layerIndex) {
+    LOGD("JNI: nativeDeleteLayer %d", layerIndex);
     AsepriteBridge* bridge = getBridge();
     bridge->deleteLayer(jlongToPtr(spritePtr), static_cast<int>(layerIndex));
 }
 
 // Get pixel
 JNIEXPORT jint JNICALL
-Java_com_aseprite_android_AsepriteCore_getPixel(JNIEnv* env, jobject thiz, jlong spritePtr, jint frame, jint layer, jint x, jint y) {
+Java_com_aseprite_android_AsepriteCore_nativeGetPixel(JNIEnv* env, jclass clazz, jlong spritePtr, jint frame, jint layer, jint x, jint y) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getPixel(jlongToPtr(spritePtr), static_cast<int>(frame), static_cast<int>(layer), static_cast<int>(x), static_cast<int>(y)));
 }
 
 // Set pixel
 JNIEXPORT void JNICALL
-Java_com_aseprite_android_AsepriteCore_setPixel(JNIEnv* env, jobject thiz, jlong spritePtr, jint frame, jint layer, jint x, jint y, jint color) {
+Java_com_aseprite_android_AsepriteCore_nativeSetPixel(JNIEnv* env, jclass clazz, jlong spritePtr, jint frame, jint layer, jint x, jint y, jint color) {
     AsepriteBridge* bridge = getBridge();
     bridge->setPixel(jlongToPtr(spritePtr), static_cast<int>(frame), static_cast<int>(layer), static_cast<int>(x), static_cast<int>(y), static_cast<int>(color));
 }
 
 // Undo
 JNIEXPORT void JNICALL
-Java_com_aseprite_android_AsepriteCore_undo(JNIEnv* env, jobject thiz, jlong spritePtr) {
-    LOGD("JNI: undo");
+Java_com_aseprite_android_AsepriteCore_nativeUndo(JNIEnv* env, jclass clazz, jlong spritePtr) {
+    LOGD("JNI: nativeUndo");
     AsepriteBridge* bridge = getBridge();
     bridge->undo(jlongToPtr(spritePtr));
 }
 
 // Redo
 JNIEXPORT void JNICALL
-Java_com_aseprite_android_AsepriteCore_redo(JNIEnv* env, jobject thiz, jlong spritePtr) {
-    LOGD("JNI: redo");
+Java_com_aseprite_android_AsepriteCore_nativeRedo(JNIEnv* env, jclass clazz, jlong spritePtr) {
+    LOGD("JNI: nativeRedo");
     AsepriteBridge* bridge = getBridge();
     bridge->redo(jlongToPtr(spritePtr));
 }
 
 // Can undo
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_canUndo(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeCanUndo(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return bridge->canUndo(jlongToPtr(spritePtr)) ? JNI_TRUE : JNI_FALSE;
 }
 
 // Can redo
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_canRedo(JNIEnv* env, jobject thiz, jlong spritePtr) {
+Java_com_aseprite_android_AsepriteCore_nativeCanRedo(JNIEnv* env, jclass clazz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return bridge->canRedo(jlongToPtr(spritePtr)) ? JNI_TRUE : JNI_FALSE;
 }
 
 // Export PNG
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_exportPNG(JNIEnv* env, jobject thiz, jlong spritePtr, jstring filePath) {
+Java_com_aseprite_android_AsepriteCore_nativeExportPNG(JNIEnv* env, jclass clazz, jlong spritePtr, jstring filePath) {
     const char* path = env->GetStringUTFChars(filePath, nullptr);
-    LOGD("JNI: exportPNG %s", path);
+    LOGD("JNI: nativeExportPNG %s", path);
     AsepriteBridge* bridge = getBridge();
     jboolean result = bridge->exportPNG(jlongToPtr(spritePtr), path) ? JNI_TRUE : JNI_FALSE;
     env->ReleaseStringUTFChars(filePath, path);
@@ -280,9 +280,9 @@ Java_com_aseprite_android_AsepriteCore_exportPNG(JNIEnv* env, jobject thiz, jlon
 
 // Export GIF
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_exportGIF(JNIEnv* env, jobject thiz, jlong spritePtr, jstring filePath) {
+Java_com_aseprite_android_AsepriteCore_nativeExportGIF(JNIEnv* env, jclass clazz, jlong spritePtr, jstring filePath) {
     const char* path = env->GetStringUTFChars(filePath, nullptr);
-    LOGD("JNI: exportGIF %s", path);
+    LOGD("JNI: nativeExportGIF %s", path);
     AsepriteBridge* bridge = getBridge();
     jboolean result = bridge->exportGIF(jlongToPtr(spritePtr), path) ? JNI_TRUE : JNI_FALSE;
     env->ReleaseStringUTFChars(filePath, path);
@@ -291,9 +291,9 @@ Java_com_aseprite_android_AsepriteCore_exportGIF(JNIEnv* env, jobject thiz, jlon
 
 // Export Sprite Sheet
 JNIEXPORT jboolean JNICALL
-Java_com_aseprite_android_AsepriteCore_exportSpriteSheet(JNIEnv* env, jobject thiz, jlong spritePtr, jstring filePath, jint columns) {
+Java_com_aseprite_android_AsepriteCore_nativeExportSpriteSheet(JNIEnv* env, jclass clazz, jlong spritePtr, jstring filePath, jint columns) {
     const char* path = env->GetStringUTFChars(filePath, nullptr);
-    LOGD("JNI: exportSpriteSheet %s cols=%d", path, columns);
+    LOGD("JNI: nativeExportSpriteSheet %s cols=%d", path, columns);
     AsepriteBridge* bridge = getBridge();
     jboolean result = bridge->exportSpriteSheet(jlongToPtr(spritePtr), path, static_cast<int>(columns)) ? JNI_TRUE : JNI_FALSE;
     env->ReleaseStringUTFChars(filePath, path);

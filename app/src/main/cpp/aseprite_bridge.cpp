@@ -153,13 +153,6 @@ int AsepriteBridge::getLayerCount(uintptr_t spritePtr) {
     return 1;
 }
 
-// NOTE: renderFrame moved to jni_main.cpp to avoid linking against AndroidBitmap
-// This bridge method is kept for API compatibility but returns null
-jobject AsepriteBridge::renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameIndex) {
-    LOGD("renderFrame called from bridge - should use JNI layer instead");
-    return nullptr;
-}
-
 uintptr_t AsepriteBridge::createLayer(uintptr_t spritePtr, const char* name) {
     LOGD("Creating layer: %s", name);
     doc::Sprite* sprite = getSprite(spritePtr);
