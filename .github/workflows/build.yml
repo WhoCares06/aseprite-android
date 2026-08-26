@@ -42,7 +42,7 @@ jobs:
         run: |
           wget -q --show-progress https://dl.google.com/android/repository/android-ndk-r26d-linux.zip
           unzip -q android-ndk-r26d-linux.zip
-          echo "NDK_ROOT=$(pwd)/android-ndk-r26d" >> $GITHUB_ENV
+          echo "NDK_ROOT=$(realpath android-ndk-r26d)" >> $GITHUB_ENV
           echo "Downloaded NDK to $NDK_ROOT"
           ls -la $NDK_ROOT
 
@@ -61,24 +61,25 @@ jobs:
         env:
           NDK_ROOT: ${{ env.NDK_ROOT }}
         run: |
-          bin/gn gen out/android_arm64 --args='
-            target_os="android"
-            target_cpu="arm64"
-            is_debug=false
-            is_official_build=true
-            is_component_build=false
-            skia_use_system_expat=false
-            skia_use_system_icu=false
-            skia_use_system_libjpeg_turbo=false
-            skia_use_system_libpng=false
-            skia_use_system_libwebp=false
-            skia_use_system_zlib=false
-            skia_use_fontconfig=false
-            skia_use_freetype=true
-            extra_cflags_cc=["-frtti"]
-            ndk="${NDK_ROOT}"
-            ndk_api=24
-          '
+          cat > args.gn << 'EOF'
+          target_os = "android"
+          target_cpu = "arm64"
+          is_debug = false
+          is_official_build = true
+          is_component_build = false
+          skia_use_system_expat = false
+          skia_use_system_icu = false
+          skia_use_system_libjpeg_turbo = false
+          skia_use_system_libpng = false
+          skia_use_system_libwebp = false
+          skia_use_system_zlib = false
+          skia_use_fontconfig = false
+          skia_use_freetype = true
+          extra_cflags_cc = [ "-frtti" ]
+          ndk = "${NDK_ROOT}"
+          ndk_api = 24
+          EOF
+          bin/gn gen out/android_arm64 --args="$(cat args.gn)"
 
       - name: Check generated build files
         working-directory: skia
