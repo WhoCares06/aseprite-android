@@ -38,11 +38,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3 git clang lld gn ninja-build
 
-      - name: Setup Android SDK (includes NDK)
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: ${{ env.ANDROID_SDK_VERSION }}
-          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+          packages: platforms;android-${{ env.ANDROID_SDK_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}
 
       - name: Sync Skia deps
         working-directory: skia
@@ -149,8 +148,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: ${{ env.ANDROID_SDK_VERSION }}
-          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+          packages: platforms;android-${{ env.ANDROID_SDK_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
