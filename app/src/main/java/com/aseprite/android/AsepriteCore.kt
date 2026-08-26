@@ -140,7 +140,7 @@ class AsepriteCore private constructor() {
         external fun nativeExportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean
 
         init {
-            System.loadLibrary("aseprite")
+            System.loadLibrary("aseprite_core")
         }
     }
 

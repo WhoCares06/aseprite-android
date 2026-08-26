@@ -22,18 +22,36 @@
         android:id="@+id/newSpriteFragment"
         android:name="com.aseprite.android.ui.NewSpriteFragment"
         android:label="@string/new_sprite_title"
-        tools:layout="@layout/fragment_new_sprite" />
+        tools:layout="@layout/fragment_new_sprite">
+        <action
+            android:id="@+id/action_newSpriteFragment_to_editorFragment"
+            app:destination="@id/editorFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/openSpriteFragment"
         android:name="com.aseprite.android.ui.OpenSpriteFragment"
         android:label="@string/open_sprite"
-        tools:layout="@layout/fragment_open_sprite" />
+        tools:layout="@layout/fragment_open_sprite">
+        <action
+            android:id="@+id/action_openSpriteFragment_to_editorFragment"
+            app:destination="@id/editorFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.aseprite.android.ui.SettingsFragment"
         android:label="@string/settings"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/editorFragment"
+        android:name="com.aseprite.android.ui.EditorFragment"
+        android:label="@string/editor_title"
+        tools:layout="@layout/fragment_editor">
+        <argument
+            android:name="spritePtr"
+            app:argType="long" />
+    </fragment>
 
 </navigation>

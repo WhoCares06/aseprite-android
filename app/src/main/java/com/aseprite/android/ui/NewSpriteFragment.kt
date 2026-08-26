@@ -1,12 +1,12 @@
 package com.aseprite.android.ui
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.aseprite.android.R
 
 class NewSpriteFragment : Fragment() {
     private var _binding: com.aseprite.android.databinding.FragmentNewSpriteBinding? = null
@@ -27,17 +27,17 @@ class NewSpriteFragment : Fragment() {
                 2 -> 2 // Indexed
                 else -> 0 // RGBA
             }
-            val intent = Intent().apply {
-                putExtra("width", width)
-                putExtra("height", height)
-                putExtra("colorMode", colorMode)
+            
+            // Create sprite via AsepriteCore and navigate to editor
+            val core = com.aseprite.android.AsepriteCore.getInstance()
+            val spritePtr = core.createSprite(width, height, colorMode)
+            if (spritePtr > 0) {
+                val action = NewSpriteFragmentDirections.actionNewSpriteFragmentToEditorFragment(spritePtr)
+                findNavController().navigate(action)
             }
-            activity?.setResult(Activity.RESULT_OK, intent)
-            activity?.finish()
         }
         binding.btnCancel.setOnClickListener {
-            activity?.setResult(Activity.RESULT_CANCELED)
-            activity?.finish()
+            findNavController().navigateUp()
         }
     }
 
