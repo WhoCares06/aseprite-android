@@ -15,13 +15,13 @@ class AsepriteCore private constructor() {
         
         fun initialize(): Boolean {
             if (initialized) return true
-            initialized = initializeNative()
+            initialized = nativeInitialize()
             return initialized
         }
         
         fun shutdown() {
             if (!initialized) return
-            shutdownNative()
+            nativeShutdown()
             initialized = false
         }
         
@@ -38,79 +38,79 @@ class AsepriteCore private constructor() {
     )
     
     fun createSprite(width: Int, height: Int, colorMode: Int = ColorMode.RGB): Long {
-        return createSpriteNative(width, height, colorMode)
+        return nativeCreateSprite(width, height, colorMode)
     }
     
     fun openSprite(filePath: String): Long {
-        return openSpriteNative(filePath)
+        return nativeOpenSprite(filePath)
     }
     
     fun saveSprite(spritePtr: Long, filePath: String): Boolean {
-        return saveSpriteNative(spritePtr, filePath)
+        return nativeSaveSprite(spritePtr, filePath)
     }
     
     fun getSpriteInfo(spritePtr: Long): SpriteInfo? {
         if (spritePtr == 0L) return null
         return SpriteInfo(
-            width = getWidthNative(spritePtr),
-            height = getHeightNative(spritePtr),
-            frameCount = getFrameCountNative(spritePtr),
-            layerCount = getLayerCountNative(spritePtr),
+            width = nativeGetWidth(spritePtr),
+            height = nativeGetHeight(spritePtr),
+            frameCount = nativeGetFrameCount(spritePtr),
+            layerCount = nativeGetLayerCount(spritePtr),
             colorMode = 0 // TODO: get from sprite
         )
     }
     
     // Frame rendering
     fun renderFrame(spritePtr: Long, frameIndex: Int): Bitmap? {
-        return renderFrameNative(spritePtr, frameIndex)
+        return nativeRenderFrame(spritePtr, frameIndex)
     }
     
     // Layer operations
     fun createLayer(spritePtr: Long, name: String): Long {
-        return createLayerNative(spritePtr, name)
+        return nativeCreateLayer(spritePtr, name)
     }
     
     fun deleteLayer(spritePtr: Long, layerIndex: Int) {
-        deleteLayerNative(spritePtr, layerIndex)
+        nativeDeleteLayer(spritePtr, layerIndex)
     }
     
     // Pixel operations
     fun getPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int {
-        return getPixelNative(spritePtr, frame, layer, x, y)
+        return nativeGetPixel(spritePtr, frame, layer, x, y)
     }
     
     fun setPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int) {
-        setPixelNative(spritePtr, frame, layer, x, y, color)
+        nativeSetPixel(spritePtr, frame, layer, x, y, color)
     }
     
     // Undo/Redo
     fun undo(spritePtr: Long) {
-        undoNative(spritePtr)
+        nativeUndo(spritePtr)
     }
     
     fun redo(spritePtr: Long) {
-        redoNative(spritePtr)
+        nativeRedo(spritePtr)
     }
     
     fun canUndo(spritePtr: Long): Boolean {
-        return canUndoNative(spritePtr)
+        return nativeCanUndo(spritePtr)
     }
     
     fun canRedo(spritePtr: Long): Boolean {
-        return canRedoNative(spritePtr)
+        return nativeCanRedo(spritePtr)
     }
     
     // Export
     fun exportPNG(spritePtr: Long, filePath: String): Boolean {
-        return exportPNGNative(spritePtr, filePath)
+        return nativeExportPNG(spritePtr, filePath)
     }
     
     fun exportGIF(spritePtr: Long, filePath: String): Boolean {
-        return exportGIFNative(spritePtr, filePath)
+        return nativeExportGIF(spritePtr, filePath)
     }
     
     fun exportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean {
-        return exportSpriteSheetNative(spritePtr, filePath, columns)
+        return nativeExportSpriteSheet(spritePtr, filePath, columns)
     }
     
     // Color modes
@@ -121,27 +121,27 @@ class AsepriteCore private constructor() {
     }
     
     // Native methods - match JNI export names (Java_com_aseprite_android_AsepriteCore_<method>)
-    external fun initializeNative(): Boolean
-    external fun shutdownNative()
-    external fun createSpriteNative(width: Int, height: Int, colorMode: Int): Long
-    external fun openSpriteNative(filePath: String): Long
-    external fun saveSpriteNative(spritePtr: Long, filePath: String): Boolean
-    external fun getWidthNative(spritePtr: Long): Int
-    external fun getHeightNative(spritePtr: Long): Int
-    external fun renderFrameNative(spritePtr: Long, frameIndex: Int): Bitmap?
-    external fun getFrameCountNative(spritePtr: Long): Int
-    external fun getLayerCountNative(spritePtr: Long): Int
-    external fun createLayerNative(spritePtr: Long, name: String): Long
-    external fun deleteLayerNative(spritePtr: Long, layerIndex: Int)
-    external fun getPixelNative(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int
-    external fun setPixelNative(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int)
-    external fun undoNative(spritePtr: Long)
-    external fun redoNative(spritePtr: Long)
-    external fun canUndoNative(spritePtr: Long): Boolean
-    external fun canRedoNative(spritePtr: Long): Boolean
-    external fun exportPNGNative(spritePtr: Long, filePath: String): Boolean
-    external fun exportGIFNative(spritePtr: Long, filePath: String): Boolean
-    external fun exportSpriteSheetNative(spritePtr: Long, filePath: String, columns: Int): Boolean
+    external fun nativeInitialize(): Boolean
+    external fun nativeShutdown()
+    external fun nativeCreateSprite(width: Int, height: Int, colorMode: Int): Long
+    external fun nativeOpenSprite(filePath: String): Long
+    external fun nativeSaveSprite(spritePtr: Long, filePath: String): Boolean
+    external fun nativeGetWidth(spritePtr: Long): Int
+    external fun nativeGetHeight(spritePtr: Long): Int
+    external fun nativeRenderFrame(spritePtr: Long, frameIndex: Int): Bitmap?
+    external fun nativeGetFrameCount(spritePtr: Long): Int
+    external fun nativeGetLayerCount(spritePtr: Long): Int
+    external fun nativeCreateLayer(spritePtr: Long, name: String): Long
+    external fun nativeDeleteLayer(spritePtr: Long, layerIndex: Int)
+    external fun nativeGetPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int
+    external fun nativeSetPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int)
+    external fun nativeUndo(spritePtr: Long)
+    external fun nativeRedo(spritePtr: Long)
+    external fun nativeCanUndo(spritePtr: Long): Boolean
+    external fun nativeCanRedo(spritePtr: Long): Boolean
+    external fun nativeExportPNG(spritePtr: Long, filePath: String): Boolean
+    external fun nativeExportGIF(spritePtr: Long, filePath: String): Boolean
+    external fun nativeExportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean
     
     // Load native library
     init {
