@@ -27,7 +27,6 @@ jobs:
         include:
           - target_cpu: arm64
             android_abi: arm64-v8a
-            gn_args: 'target_os="android" target_cpu="arm64" is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false'
     steps:
       - name: Checkout Skia
         uses: actions/checkout@v4
@@ -37,22 +36,7 @@ jobs:
           path: skia
           submodules: false
 
-      - name: Setup cache key
-        run: |
-          echo "CACHE_KEY=skia-${{ matrix.android_abi }}-$(cd skia && git rev-parse --short HEAD)" >> $GITHUB_ENV
-
-      - name: Restore Skia build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            skia/out/android_${{ matrix.target_cpu }}
-            skia/.git
-          key: ${{ env.CACHE_KEY }}
-          restore-keys: |
-            skia-${{ matrix.android_abi }}-
-
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y python3 git clang lld gn ninja-build
@@ -70,26 +54,42 @@ jobs:
       - name: Generate build files
         working-directory: skia
         run: |
-          bin/gn gen out/android_${{ matrix.target_cpu }} --args='${{ matrix.gn_args }}'
+          bin/gn gen out/android_arm64 --args='
+            target_os="android"
+            target_cpu="arm64"
+            is_debug=false
+            is_official_build=true
+            skia_use_system_expat=false
+            skia_use_system_icu=false
+            skia_use_system_libjpeg_turbo=false
+            skia_use_system_libpng=false
+            skia_use_system_libwebp=false
+            skia_use_system_zlib=false
+            extra_cflags_cc=["-frtti"]
+          '
 
       - name: Build Skia
         working-directory: skia
         run: |
-          ninja -C out/android_${{ matrix.target_cpu }} -j$(nproc)
+          ninja -C out/android_arm64 -j$(nproc)
+
+      - name: Verify libskia.a
+        run: |
+          ls -la skia/out/android_arm64/libskia.a
 
       - name: Package Skia artifacts
         working-directory: skia
         run: |
-          mkdir -p ../skia-artifacts/${{ matrix.android_abi }}
-          cp out/android_${{ matrix.target_cpu }}/libskia.a ../skia-artifacts/${{ matrix.android_abi }}/
-          mkdir -p ../skia-artifacts/${{ matrix.android_abi }}/include
-          cp -r include/* ../skia-artifacts/${{ matrix.android_abi }}/include/
+          mkdir -p ../skia-artifacts/arm64-v8a
+          cp out/android_arm64/libskia.a ../skia-artifacts/arm64-v8a/
+          mkdir -p ../skia-artifacts/arm64-v8a/include
+          cp -r include/* ../skia-artifacts/arm64-v8a/include/
 
       - name: Upload Skia artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: skia-${{ matrix.android_abi }}
-          path: skia-artifacts/${{ matrix.android_abi }}
+          name: skia-arm64-v8a
+          path: skia-artifacts/arm64-v8a
           retention-days: 30
 
   build-android:
@@ -125,11 +125,9 @@ jobs:
 
       - name: Configure Skia paths
         run: |
-          for abi in arm64-v8a; do
-            if [ -d "skia-prebuilt/$abi" ]; then
-              echo "SKIA_DIR_${abi//-/_}=$(pwd)/skia-prebuilt/$abi" >> $GITHUB_ENV
-            fi
-          done
+          if [ -d "skia-prebuilt/arm64-v8a" ]; then
+            echo "SKIA_DIR_ARM64_V8A=$(pwd)/skia-prebuilt/arm64-v8a" >> $GITHUB_ENV
+          fi
 
       - name: Update CMakeLists with Skia paths
         run: |
@@ -146,22 +144,10 @@ jobs:
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions -DANDROID")
           endif()
 
-          # Skia paths per ABI
-          set(SKIA_DIRS
-            arm64-v8a "$ENV{SKIA_DIR_ARM64_V8A}"
-          )
+          set(SKIA_DIR "$ENV{SKIA_DIR_ARM64_V8A}")
 
-          foreach(abi_path ${SKIA_DIRS})
-            list(GET abi_path 0 abi)
-            list(GET abi_path 1 path)
-            if(ANDROID_ABI STREQUAL abi AND EXISTS ${path}/libskia.a)
-              set(SKIA_DIR ${path})
-              message(STATUS "Found Skia for ${abi}: ${path}")
-            endif()
-          endforeach()
-
-          if(NOT SKIA_DIR)
-            message(FATAL_ERROR "Skia not found for ABI: ${ANDROID_ABI}")
+          if(NOT EXISTS ${SKIA_DIR}/libskia.a)
+            message(FATAL_ERROR "Skia not found at: ${SKIA_DIR}")
           endif()
 
           set(SKIA_LIBRARY ${SKIA_DIR}/libskia.a)
