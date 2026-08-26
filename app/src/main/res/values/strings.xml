@@ -36,4 +36,15 @@
     <string name="eraser">Eraser</string>
     <string name="fill">Fill</string>
     <string name="eyedropper">Eyedropper</string>
+
+    <string-array name="color_mode_entries">
+        <item>RGBA</item>
+        <item>Grayscale</item>
+        <item>Indexed</item>
+    </string-array>
+    <string-array name="color_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 </resources>

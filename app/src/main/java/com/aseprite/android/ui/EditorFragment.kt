@@ -57,7 +57,7 @@ class EditorFragment : Fragment() {
 
         // Frame slider
         val frameCount = core.getFrameCount(spritePtr)
-        binding.frameSeekBar.max = max(0, frameCount - 1)
+        binding.frameSeekBar.max = maxOf(0, frameCount - 1)
         binding.frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {

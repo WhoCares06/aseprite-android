@@ -117,4 +117,81 @@ class AsepriteCore private constructor() {
             System.loadLibrary("aseprite")
         }
     }
+
+    // Instance methods that wrap the static JNI calls
+    fun createSprite(width: Int, height: Int, colorMode: Int): Long {
+        return nativeCreateSprite(width, height, colorMode)
+    }
+
+    fun openSprite(filePath: String): Long {
+        return nativeOpenSprite(filePath)
+    }
+
+    fun saveSprite(spritePtr: Long, filePath: String): Boolean {
+        return nativeSaveSprite(spritePtr, filePath)
+    }
+
+    fun getWidth(spritePtr: Long): Int {
+        return nativeGetWidth(spritePtr)
+    }
+
+    fun getHeight(spritePtr: Long): Int {
+        return nativeGetHeight(spritePtr)
+    }
+
+    fun getFrameCount(spritePtr: Long): Int {
+        return nativeGetFrameCount(spritePtr)
+    }
+
+    fun getLayerCount(spritePtr: Long): Int {
+        return nativeGetLayerCount(spritePtr)
+    }
+
+    fun renderFrame(spritePtr: Long, frameIndex: Int): Bitmap? {
+        return nativeRenderFrame(spritePtr, frameIndex)
+    }
+
+    fun createLayer(spritePtr: Long, name: String): Long {
+        return nativeCreateLayer(spritePtr, name)
+    }
+
+    fun deleteLayer(spritePtr: Long, layerIndex: Int) {
+        nativeDeleteLayer(spritePtr, layerIndex)
+    }
+
+    fun getPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int {
+        return nativeGetPixel(spritePtr, frame, layer, x, y)
+    }
+
+    fun setPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int) {
+        nativeSetPixel(spritePtr, frame, layer, x, y, color)
+    }
+
+    fun undo(spritePtr: Long) {
+        nativeUndo(spritePtr)
+    }
+
+    fun redo(spritePtr: Long) {
+        nativeRedo(spritePtr)
+    }
+
+    fun canUndo(spritePtr: Long): Boolean {
+        return nativeCanUndo(spritePtr)
+    }
+
+    fun canRedo(spritePtr: Long): Boolean {
+        return nativeCanRedo(spritePtr)
+    }
+
+    fun exportPNG(spritePtr: Long, filePath: String): Boolean {
+        return nativeExportPNG(spritePtr, filePath)
+    }
+
+    fun exportGIF(spritePtr: Long, filePath: String): Boolean {
+        return nativeExportGIF(spritePtr, filePath)
+    }
+
+    fun exportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean {
+        return nativeExportSpriteSheet(spritePtr, filePath, columns)
+    }
 }

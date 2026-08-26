@@ -2,6 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_new"
+        android:icon="@drawable/ic_new_sprite"
+        android:title="@string/new_sprite"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_open"
+        android:icon="@drawable/ic_open_sprite"
+        android:title="@string/open_sprite"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_about"
         android:title="@string/about"
         app:showAsAction="never" />
