@@ -37,6 +37,9 @@ public:
     int getFrameCount(uintptr_t spritePtr);
     int getLayerCount(uintptr_t spritePtr);
 
+    // Internal: get sprite pointer (used by JNI layer)
+    doc::Sprite* getSprite(uintptr_t spritePtr);
+
     // Frame rendering
     jobject renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameIndex);
 
@@ -60,8 +63,6 @@ public:
     bool exportSpriteSheet(uintptr_t spritePtr, const char* filePath, int columns);
 
 private:
-    doc::Sprite* getSprite(uintptr_t spritePtr);
-    
     class Impl;
     std::unique_ptr<Impl> pImpl;
 };
