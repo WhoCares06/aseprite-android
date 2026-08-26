@@ -44,6 +44,7 @@ jobs:
           unzip -q android-ndk-r26d-linux.zip
           echo "NDK_ROOT=$(realpath android-ndk-r26d)" >> $GITHUB_ENV
           echo "Downloaded NDK to $NDK_ROOT"
+          echo "NDK contents:"
           ls -la $NDK_ROOT
 
       - name: Sync Skia deps
@@ -62,6 +63,11 @@ jobs:
           NDK_ROOT: ${{ env.NDK_ROOT }}
         run: |
           echo "NDK_ROOT = $NDK_ROOT"
+          echo "NDK toolchains:"
+          ls -la $NDK_ROOT/toolchains/
+          echo "NDK platforms:"
+          ls -la $NDK_ROOT/platforms/ 2>/dev/null || echo "No platforms dir"
+          
           cat > args.gn << 'EOF'
           target_os = "android"
           target_cpu = "arm64"
@@ -82,7 +88,7 @@ jobs:
           EOF
           echo "=== args.gn content ==="
           cat args.gn
-          bin/gn gen out/android_arm64 --args="$(cat args.gn)"
+          bin/gn gen out/android_arm64 --args="$(cat args.gn)" --verbose
 
       - name: Check generated build files
         working-directory: skia
