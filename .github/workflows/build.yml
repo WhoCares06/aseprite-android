@@ -38,10 +38,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3 git clang lld gn ninja-build
 
-      - name: Setup Android SDK with NDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: "platforms;android-${{ env.ANDROID_SDK_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Find pre-installed NDK
+        run: |
+          # GitHub runners have NDK pre-installed
+          if [ -d "/opt/android/ndk/${{ env.ANDROID_NDK_VERSION }}" ]; then
+            echo "NDK_ROOT=/opt/android/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+            echo "Found NDK at /opt/android/ndk/${{ env.ANDROID_NDK_VERSION }}"
+          elif [ -d "/opt/android/ndk/r26d" ]; then
+            echo "NDK_ROOT=/opt/android/ndk/r26d" >> $GITHUB_ENV
+            echo "Found NDK at /opt/android/ndk/r26d"
+          elif [ -d "/usr/local/lib/android/ndk/${{ env.ANDROID_NDK_VERSION }}" ]; then
+            echo "NDK_ROOT=/usr/local/lib/android/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+            echo "Found NDK at /usr/local/lib/android/ndk/${{ env.ANDROID_NDK_VERSION }}"
+          else
+            echo "Searching for NDK..."
+            find /opt -name "ndk" -type d 2>/dev/null | head -5
+            find /usr -name "ndk" -type d 2>/dev/null | head -5
+            echo "NDK_ROOT=/opt/android/ndk/r26d" >> $GITHUB_ENV
+          fi
 
       - name: Sync Skia deps
         working-directory: skia
@@ -55,6 +69,8 @@ jobs:
 
       - name: Generate build files for Android arm64
         working-directory: skia
+        env:
+          NDK_ROOT: ${{ env.NDK_ROOT }}
         run: |
           bin/gn gen out/android_arm64 --args='
             target_os="android"
@@ -71,7 +87,7 @@ jobs:
             skia_use_fontconfig=false
             skia_use_freetype=true
             extra_cflags_cc=["-frtti"]
-            ndk="${ANDROID_NDK_ROOT}"
+            ndk="${NDK_ROOT}"
             ndk_api=24
           '
 
