@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -60,6 +61,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+        
+        // Verify native library is initialized
+        if (!AsepriteCore.isInitialized()) {
+            Log.e("MainActivity", "Native library not initialized, attempting re-initialization")
+            AsepriteCore.initialize()
         }
     }
 

@@ -27,6 +27,14 @@ namespace app {
     class App;
 }
 
+// Dummy sprite for UI testing (replace with actual Aseprite types when integrated)
+class DummySprite {
+public:
+    DummySprite(int w, int h) : width(w), height(h) {}
+    int width;
+    int height;
+};
+
 // Pimpl implementation
 class AsepriteBridge::Impl {
 public:
@@ -81,7 +89,8 @@ void AsepriteBridge::shutdown() {
     LOGD("Shutting down Aseprite bridge");
     std::lock_guard<std::mutex> lock(pImpl->mutex);
     for (auto& [id, sprite] : pImpl->sprites) {
-        delete sprite;
+        DummySprite* dummy = reinterpret_cast<DummySprite*>(sprite);
+        delete dummy;
     }
     pImpl->sprites.clear();
     if (pImpl->app) {
@@ -96,15 +105,18 @@ doc::Sprite* AsepriteBridge::getSprite(uintptr_t spritePtr) {
 
 uintptr_t AsepriteBridge::createSprite(int width, int height, int colorMode) {
     LOGD("Creating sprite %dx%d colorMode=%d", width, height, colorMode);
-    // TODO: Create actual Aseprite sprite
-    // For now, return a dummy pointer
-    return pImpl->addSprite(nullptr);
+    // Create a dummy sprite that can be used for UI testing
+    // In a real implementation, this would create an actual Aseprite sprite
+    DummySprite* sprite = new DummySprite(width, height);
+    return pImpl->addSprite(reinterpret_cast<doc::Sprite*>(sprite));
 }
 
 uintptr_t AsepriteBridge::openSprite(const char* filePath) {
     LOGD("Opening sprite: %s", filePath);
     // TODO: Load actual Aseprite sprite from file
-    return pImpl->addSprite(nullptr);
+    // For now, create a dummy sprite with default size
+    DummySprite* sprite = new DummySprite(256, 256);
+    return pImpl->addSprite(reinterpret_cast<doc::Sprite*>(sprite));
 }
 
 bool AsepriteBridge::saveSprite(uintptr_t spritePtr, const char* filePath) {
@@ -118,28 +130,26 @@ bool AsepriteBridge::saveSprite(uintptr_t spritePtr, const char* filePath) {
 int AsepriteBridge::getWidth(uintptr_t spritePtr) {
     doc::Sprite* sprite = getSprite(spritePtr);
     if (!sprite) return 0;
-    // TODO: Return actual width
-    return 256;
+    DummySprite* dummy = reinterpret_cast<DummySprite*>(sprite);
+    return dummy->width;
 }
 
 int AsepriteBridge::getHeight(uintptr_t spritePtr) {
     doc::Sprite* sprite = getSprite(spritePtr);
     if (!sprite) return 0;
-    // TODO: Return actual height
-    return 256;
+    DummySprite* dummy = reinterpret_cast<DummySprite*>(sprite);
+    return dummy->height;
 }
 
 int AsepriteBridge::getFrameCount(uintptr_t spritePtr) {
     doc::Sprite* sprite = getSprite(spritePtr);
     if (!sprite) return 0;
-    // TODO: Return actual frame count
     return 1;
 }
 
 int AsepriteBridge::getLayerCount(uintptr_t spritePtr) {
     doc::Sprite* sprite = getSprite(spritePtr);
     if (!sprite) return 0;
-    // TODO: Return actual layer count
     return 1;
 }
 

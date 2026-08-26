@@ -2,6 +2,7 @@ package com.aseprite.android.ui
 
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -17,6 +18,7 @@ class EditorFragment : Fragment() {
     private val binding get() = _binding!!
     private var spritePtr: Long = 0
     private var currentFrame = 0
+    private val TAG = "EditorFragment"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = com.aseprite.android.databinding.FragmentEditorBinding.inflate(inflater, container, false)
@@ -28,10 +30,12 @@ class EditorFragment : Fragment() {
 
         spritePtr = arguments?.getLong("spritePtr", 0) ?: 0
         if (spritePtr == 0L) {
+            Log.e(TAG, "Invalid spritePtr received, finishing activity")
             requireActivity().finish()
             return
         }
 
+        Log.d(TAG, "EditorFragment created with spritePtr=$spritePtr")
         setupCanvas()
         setupControls()
         renderFrame()
@@ -56,63 +60,96 @@ class EditorFragment : Fragment() {
         val core = AsepriteCore.getInstance()
 
         // Frame slider
-        val frameCount = core.getFrameCount(spritePtr)
-        binding.frameSeekBar.max = maxOf(0, frameCount - 1)
-        binding.frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    currentFrame = progress
-                    renderFrame()
+        try {
+            val frameCount = core.getFrameCount(spritePtr)
+            binding.frameSeekBar.max = maxOf(0, frameCount - 1)
+            binding.frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        currentFrame = progress
+                        renderFrame()
+                    }
                 }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up frame slider", e)
+        }
 
         // Tool buttons
-        binding.btnUndo.setOnClickListener { core.undo(spritePtr); renderFrame() }
-        binding.btnRedo.setOnClickListener { core.redo(spritePtr); renderFrame() }
-        binding.btnAddLayer.setOnClickListener { addLayer() }
-        binding.btnDeleteLayer.setOnClickListener { deleteLayer() }
+        binding.btnUndo.setOnClickListener { 
+            try { core.undo(spritePtr); renderFrame() } catch (e: Exception) { Log.e(TAG, "Undo failed", e) }
+        }
+        binding.btnRedo.setOnClickListener { 
+            try { core.redo(spritePtr); renderFrame() } catch (e: Exception) { Log.e(TAG, "Redo failed", e) }
+        }
+        binding.btnAddLayer.setOnClickListener { 
+            try { addLayer() } catch (e: Exception) { Log.e(TAG, "Add layer failed", e) }
+        }
+        binding.btnDeleteLayer.setOnClickListener { 
+            try { deleteLayer() } catch (e: Exception) { Log.e(TAG, "Delete layer failed", e) }
+        }
 
         // Layer spinner
         updateLayerSpinner()
     }
 
     private fun drawAt(x: Int, y: Int) {
-        val core = AsepriteCore.getInstance()
-        core.setPixel(spritePtr, currentFrame, 0, x, y, 0xFF000000.toInt()) // Black for now
-        renderFrame()
+        try {
+            val core = AsepriteCore.getInstance()
+            core.setPixel(spritePtr, currentFrame, 0, x, y, 0xFF000000.toInt()) // Black for now
+            renderFrame()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error drawing at ($x,$y)", e)
+        }
     }
 
     private fun renderFrame() {
-        val core = AsepriteCore.getInstance()
-        val bitmap = core.renderFrame(spritePtr, currentFrame)
-        bitmap?.let {
-            binding.editorCanvas.setImageBitmap(it)
+        try {
+            val core = AsepriteCore.getInstance()
+            val bitmap = core.renderFrame(spritePtr, currentFrame)
+            bitmap?.let {
+                binding.editorCanvas.setImageBitmap(it)
+            } ?: Log.w(TAG, "renderFrame returned null bitmap")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error rendering frame", e)
         }
     }
 
     private fun addLayer() {
-        val core = AsepriteCore.getInstance()
-        val layerPtr = core.createLayer(spritePtr, "Layer ${core.getLayerCount(spritePtr) + 1}")
-        if (layerPtr > 0) {
-            updateLayerSpinner()
+        try {
+            val core = AsepriteCore.getInstance()
+            val layerPtr = core.createLayer(spritePtr, "Layer ${core.getLayerCount(spritePtr) + 1}")
+            if (layerPtr > 0) {
+                updateLayerSpinner()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding layer", e)
         }
     }
 
     private fun deleteLayer() {
-        val core = AsepriteCore.getInstance()
-        if (core.getLayerCount(spritePtr) > 1) {
-            core.deleteLayer(spritePtr, 0)
-            updateLayerSpinner()
+        try {
+            val core = AsepriteCore.getInstance()
+            if (core.getLayerCount(spritePtr) > 1) {
+                core.deleteLayer(spritePtr, 0)
+                updateLayerSpinner()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting layer", e)
         }
     }
 
     private fun updateLayerSpinner() {
-        val core = AsepriteCore.getInstance()
-        val count = core.getLayerCount(spritePtr)
-        // TODO: Update layer spinner adapter
+        try {
+            val core = AsepriteCore.getInstance()
+            val count = core.getLayerCount(spritePtr)
+            // TODO: Update layer spinner adapter
+            Log.d(TAG, "Layer count: $count")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating layer spinner", e)
+        }
     }
 
     override fun onDestroyView() {

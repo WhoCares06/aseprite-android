@@ -13,6 +13,7 @@ class AsepriteCore private constructor() {
     companion object {
         private const val TAG = "AsepriteCore"
         private var sInstance: AsepriteCore? = null
+        private var sInitialized = false
 
         /**
          * Get singleton instance
@@ -29,10 +30,34 @@ class AsepriteCore private constructor() {
         }
 
         /**
+         * Check if native library is initialized
+         */
+        fun isInitialized(): Boolean {
+            return sInitialized
+        }
+
+        /**
          * Initialize native library
          */
         fun initialize(): Boolean {
-            return nativeInitialize()
+            try {
+                val result = nativeInitialize()
+                sInitialized = result
+                if (result) {
+                    Log.d(TAG, "Native library initialized successfully")
+                } else {
+                    Log.e(TAG, "Native library initialization failed")
+                }
+                return result
+            } catch (e: UnsatisfiedLinkError) {
+                Log.e(TAG, "Native library not found: ${e.message}", e)
+                sInitialized = false
+                return false
+            } catch (e: Exception) {
+                Log.e(TAG, "Error initializing native library: ${e.message}", e)
+                sInitialized = false
+                return false
+            }
         }
 
         /**
@@ -41,6 +66,7 @@ class AsepriteCore private constructor() {
         fun shutdown() {
             nativeShutdown()
             sInstance = null
+            sInitialized = false
         }
 
         @JvmStatic
