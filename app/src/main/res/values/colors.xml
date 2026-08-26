@@ -16,4 +16,11 @@
     <color name="colorPrimary">#FF6B35</color>
     <color name="colorPrimaryDark">#E64A19</color>
     <color name="colorAccent">#FF03DAC5</color>
+    
+    <!-- Aseprite-specific colors -->
+    <color name="aseprite_toolbar">#FF3700B3</color>
+    <color name="aseprite_toolbar_text">#FFFFFFFF</color>
+    <color name="aseprite_canvas_bg">#FF1E1E1E</color>
+    <color name="aseprite_layer_bg">#FF2D2D2D</color>
+    <color name="aseprite_accent">#FF6B35</color>
 </resources>
