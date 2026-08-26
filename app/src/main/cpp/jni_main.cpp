@@ -20,13 +20,17 @@ AsepriteBridge* getBridge() {
     return g_bridge.get();
 }
 
-// Safe pointer conversion
+// Safe pointer conversion - use union to avoid reinterpret_cast issues
 static inline uintptr_t jlongToPtr(jlong value) {
-    return reinterpret_cast<uintptr_t>(value);
+    union { jlong j; uintptr_t p; } u;
+    u.j = value;
+    return u.p;
 }
 
 static inline jlong ptrToJlong(uintptr_t value) {
-    return reinterpret_cast<jlong>(value);
+    union { jlong j; uintptr_t p; } u;
+    u.p = value;
+    return u.j;
 }
 
 extern "C" {

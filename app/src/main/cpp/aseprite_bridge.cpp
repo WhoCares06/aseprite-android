@@ -153,35 +153,60 @@ jobject AsepriteBridge::renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameI
     int width = getWidth(spritePtr);
     int height = getHeight(spritePtr);
 
-    // Create Android Bitmap
-    AndroidBitmapInfo info;
-    info.width = width;
-    info.height = height;
-    info.format = ANDROID_BITMAP_FORMAT_RGBA_8888;
-    info.stride = width * 4;
-    info.flags = 0;
-    info.handle = nullptr;
-
-    jobject bitmap;
-    int ret = AndroidBitmap_create(env, &info, &bitmap);
-    if (ret < 0) {
-        LOGE("Failed to create bitmap: %d", ret);
+    // Create Android Bitmap using Bitmap.createBitmap
+    jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
+    if (!bitmapClass) {
+        LOGE("Failed to find Bitmap class");
         return nullptr;
     }
 
-    // Fill with dummy data (checkerboard pattern)
+    jmethodID createBitmapMethod = env->GetStaticMethodID(bitmapClass, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+    if (!createBitmapMethod) {
+        LOGE("Failed to find createBitmap method");
+        return nullptr;
+    }
+
+    jclass configClass = env->FindClass("android/graphics/Bitmap$Config");
+    if (!configClass) {
+        LOGE("Failed to find Bitmap.Config class");
+        return nullptr;
+    }
+
+    jfieldID argb8888Field = env->GetStaticFieldID(configClass, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
+    if (!argb8888Field) {
+        LOGE("Failed to find ARGB_8888 field");
+        return nullptr;
+    }
+
+    jobject config = env->GetStaticObjectField(configClass, argb8888Field);
+    if (!config) {
+        LOGE("Failed to get ARGB_8888 config");
+        return nullptr;
+    }
+
+    jobject bitmap = env->CallStaticObjectMethod(bitmapClass, createBitmapMethod, width, height, config);
+    if (!bitmap) {
+        LOGE("Failed to create bitmap");
+        return nullptr;
+    }
+
+    // Fill with dummy data (checkerboard pattern for transparency)
+    AndroidBitmapInfo info;
     void* pixels;
-    ret = AndroidBitmap_lockPixels(env, bitmap, &pixels);
+    int ret = AndroidBitmap_getInfo(env, bitmap, &info);
     if (ret >= 0) {
-        uint32_t* pixelData = static_cast<uint32_t*>(pixels);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                // Checkerboard pattern for transparency
-                bool dark = ((x / 8) + (y / 8)) % 2 == 0;
-                pixelData[y * width + x] = dark ? 0xFFCCCCCC : 0xFFFFFFFF;
+        ret = AndroidBitmap_lockPixels(env, bitmap, &pixels);
+        if (ret >= 0) {
+            uint32_t* pixelData = static_cast<uint32_t*>(pixels);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    // Checkerboard pattern for transparency
+                    bool dark = ((x / 8) + (y / 8)) % 2 == 0;
+                    pixelData[y * width + x] = dark ? 0xFFCCCCCC : 0xFFFFFFFF;
+                }
             }
+            AndroidBitmap_unlockPixels(env, bitmap);
         }
-        AndroidBitmap_unlockPixels(env, bitmap);
     }
 
     return bitmap;
