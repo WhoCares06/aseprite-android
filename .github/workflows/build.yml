@@ -53,6 +53,7 @@ jobs:
             target_cpu="arm64"
             is_debug=false
             is_official_build=true
+            is_component_build=false
             skia_use_system_expat=false
             skia_use_system_icu=false
             skia_use_system_libjpeg_turbo=false
@@ -67,11 +68,18 @@ jobs:
         run: |
           ls -la out/android_arm64/
           cat out/android_arm64/args.gn
+          ninja -C out/android_arm64 -t targets all | grep -E "(libskia|skia)" | head -20
 
       - name: Build Skia (verbose)
         working-directory: skia
         run: |
-          ninja -C out/android_arm64 -j$(nproc) -v 2>&1 | head -300
+          ninja -C out/android_arm64 -j$(nproc) -v 2>&1 | head -500
+
+      - name: Check what was built
+        working-directory: skia
+        run: |
+          find out/android_arm64 -name "*.a" -o -name "libskia*" | head -20
+          ls -la out/android_arm64/obj/ 2>/dev/null | head -20 || true
 
       - name: Verify libskia.a
         run: |
