@@ -10,13 +10,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.aseprite.android.AsepriteCore
-import com.aseprite.android.databinding.FragmentEditorBinding
 import kotlinx.coroutines.launch
 
 class EditorFragment : Fragment() {
 
-    private var _binding: FragmentEditorBinding? = null
-    private val binding get() = _binding!!
     private var spritePtr: Long = 0
     private var currentFrame = 0
     private var currentLayer = 0
@@ -29,8 +26,7 @@ class EditorFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentEditorBinding.inflate(inflater, container, false)
-        return binding.root
+        return inflater.inflate(R.layout.fragment_editor, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,31 +43,27 @@ class EditorFragment : Fragment() {
     }
     
     private fun setupEditor() {
-        // Setup canvas touch handling
-        binding.editorCanvas.setOnTouchListener { v, event ->
-            handleCanvasTouch(event)
-            true
-        }
-        
         // Setup toolbar buttons
-        binding.btnUndo.setOnClickListener { AsepriteCore.undo(spritePtr) }
-        binding.btnRedo.setOnClickListener { AsepriteCore.redo(spritePtr) }
-        binding.btnZoomIn.setOnClickListener { zoomLevel *= 1.2f; invalidateCanvas() }
-        binding.btnZoomOut.setOnClickListener { zoomLevel /= 1.2f; invalidateCanvas() }
-        binding.btnGrid.setOnClickListener { binding.editorCanvas.toggleGrid() }
-        binding.btnOnionSkin.setOnClickListener { binding.editorCanvas.toggleOnionSkin() }
+        requireView().findViewById<View>(R.id.btn_undo).setOnClickListener { AsepriteCore.undo(spritePtr) }
+        requireView().findViewById<View>(R.id.btn_redo).setOnClickListener { AsepriteCore.redo(spritePtr) }
+        requireView().findViewById<View>(R.id.btn_zoom_in).setOnClickListener { zoomLevel *= 1.2f; invalidateCanvas() }
+        requireView().findViewById<View>(R.id.btn_zoom_out).setOnClickListener { zoomLevel /= 1.2f; invalidateCanvas() }
+        requireView().findViewById<View>(R.id.btn_grid).setOnClickListener { toggleGrid() }
+        requireView().findViewById<View>(R.id.btn_onion_skin).setOnClickListener { toggleOnionSkin() }
         
         // Frame navigation
-        binding.btnPrevFrame.setOnClickListener { 
+        requireView().findViewById<View>(R.id.btn_prev_frame).setOnClickListener { 
             if (currentFrame > 0) { currentFrame--; updateFrameInfo(); invalidateCanvas() }
         }
-        binding.btnNextFrame.setOnClickListener { 
+        requireView().findViewById<View>(R.id.btn_next_frame).setOnClickListener { 
             val frameCount = AsepriteCore.getFrameCount(spritePtr)
             if (currentFrame < frameCount - 1) { currentFrame++; updateFrameInfo(); invalidateCanvas() }
         }
         
         // Layer navigation
-        binding.btnAddLayer.setOnClickListener { AsepriteCore.createLayer(spritePtr, "Layer ${AsepriteCore.getLayerCount(spritePtr) + 1}") }
+        requireView().findViewById<View>(R.id.btn_add_layer).setOnClickListener { 
+            AsepriteCore.createLayer(spritePtr, "Layer ${AsepriteCore.getLayerCount(spritePtr) + 1}") 
+        }
         
         // Initial render
         lifecycleScope.launch {
@@ -79,29 +71,31 @@ class EditorFragment : Fragment() {
         }
     }
     
-    private fun handleCanvasTouch(event: MotionEvent): Boolean {
-        // TODO: Implement drawing, panning, selection
-        return true
+    private fun toggleGrid() {
+        // TODO: Implement grid toggle
     }
     
+    private fun toggleOnionSkin() {
+        // TODO: Implement onion skin toggle
+    }
+
     private fun renderCurrentFrame() {
         val bitmap = AsepriteCore.renderFrame(spritePtr, currentFrame)
         bitmap?.let {
-            binding.editorCanvas.setBitmap(it)
+            requireView().findViewById<com.aseprite.android.ui.CanvasView>(R.id.editor_canvas).setBitmap(it)
         }
     }
     
     private fun updateFrameInfo() {
-        binding.frameInfo.text = "${currentFrame + 1} / ${AsepriteCore.getFrameCount(spritePtr)}"
+        requireView().findViewById<android.widget.TextView>(R.id.frame_info).text = "${currentFrame + 1} / ${AsepriteCore.getFrameCount(spritePtr)}"
     }
     
     private fun invalidateCanvas() {
-        binding.editorCanvas.invalidate()
+        requireView().findViewById<com.aseprite.android.ui.CanvasView>(R.id.editor_canvas).invalidate()
         renderCurrentFrame()
     }
     
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
     }
 }

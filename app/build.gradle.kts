@@ -26,7 +26,7 @@ android {
         }
 
         ndk {
-            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
+            abiFilters.addAll(listOf("arm64-v8a"))
         }
     }
 
@@ -38,6 +38,10 @@ android {
         debug {
             isDebuggable = true
         }
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 
     compileOptions {
