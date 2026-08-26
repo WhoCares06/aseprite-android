@@ -6,135 +6,113 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.SeekBar
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.lifecycleScope
 import com.aseprite.android.AsepriteCore
-import com.aseprite.android.databinding.FragmentEditorBinding
+import kotlinx.coroutines.launch
 
 class EditorFragment : Fragment() {
-
-    private var _binding: FragmentEditorBinding? = null
+    private var _binding: com.aseprite.android.databinding.FragmentEditorBinding? = null
     private val binding get() = _binding!!
     private var spritePtr: Long = 0
     private var currentFrame = 0
-    private var currentLayer = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentEditorBinding.inflate(inflater, container, false)
+        _binding = com.aseprite.android.databinding.FragmentEditorBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        spritePtr = arguments?.getLong("sprite_ptr", 0) ?: 0
 
-        if (spritePtr == 0L) {
-            Toast.makeText(requireContext(), "Invalid sprite", Toast.LENGTH_SHORT).show()
-            findNavController().navigateUp()
+        spritePtr = arguments?.getLong("spritePtr", 0) ?: 0
+        if (spritePtr == 0) {
+            requireActivity().finish()
             return
         }
 
-        setupUI()
-        updateFrameInfo()
+        setupCanvas()
+        setupControls()
+        renderFrame()
     }
 
-    private fun setupUI() {
-        binding.canvasView.setOnTouchListener { v, event ->
-            handleTouch(v, event)
-            true
+    private fun setupCanvas() {
+        binding.editorCanvas.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN,
+                MotionEvent.ACTION_MOVE -> {
+                    val x = (event.x / v.scaleX).toInt()
+                    val y = (event.y / v.scaleY).toInt()
+                    drawAt(x, y)
+                    true
+                }
+                else -> false
+            }
         }
+    }
 
-        binding.btnPrevFrame.setOnClickListener { previousFrame() }
-        binding.btnNextFrame.setOnClickListener { nextFrame() }
-        binding.btnAddLayer.setOnClickListener { addLayer() }
-        binding.btnUndo.setOnClickListener { undo() }
-        binding.btnRedo.setOnClickListener { redo() }
+    private fun setupControls() {
+        val core = AsepriteCore.getInstance()
 
-        binding.seekFrame.setOnSeekBarChangeListener(object : androidx.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: androidx.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+        // Frame slider
+        val frameCount = core.getFrameCount(spritePtr)
+        binding.frameSeekBar.max = max(0, frameCount - 1)
+        binding.frameSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     currentFrame = progress
-                    renderCurrentFrame()
+                    renderFrame()
                 }
             }
-            override fun onStartTrackingTouch(seekBar: androidx.widget.SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: androidx.widget.SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+
+        // Tool buttons
+        binding.btnUndo.setOnClickListener { core.undo(spritePtr); renderFrame() }
+        binding.btnRedo.setOnClickListener { core.redo(spritePtr); renderFrame() }
+        binding.btnAddLayer.setOnClickListener { addLayer() }
+        binding.btnDeleteLayer.setOnClickListener { deleteLayer() }
+
+        // Layer spinner
+        updateLayerSpinner()
     }
 
-    private fun handleTouch(view: View, event: MotionEvent): Boolean {
-        val x = event.x.toInt()
-        val y = event.y.toInt()
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                // Draw pixel
-                AsepriteCore().setPixel(spritePtr, currentFrame, currentLayer, x, y, 0xFF000000) // Black
-                renderCurrentFrame()
-            }
-        }
-        return true
+    private fun drawAt(x: Int, y: Int) {
+        val core = AsepriteCore.getInstance()
+        core.setPixel(spritePtr, currentFrame, 0, x, y, 0xFF000000) // Black for now
+        renderFrame()
     }
 
-    private fun renderCurrentFrame() {
-        val bitmap = AsepriteCore().renderFrame(spritePtr, currentFrame)
-        bitmap?.let { binding.canvasView.setImageBitmap(it) }
-    }
-
-    private fun previousFrame() {
-        if (currentFrame > 0) {
-            currentFrame--
-            binding.seekFrame.progress = currentFrame
-            renderCurrentFrame()
-            updateFrameInfo()
-        }
-    }
-
-    private fun nextFrame() {
-        val frameCount = AsepriteCore().getFrameCount(spritePtr)
-        if (currentFrame < frameCount - 1) {
-            currentFrame++
-            binding.seekFrame.progress = currentFrame
-            renderCurrentFrame()
-            updateFrameInfo()
+    private fun renderFrame() {
+        val core = AsepriteCore.getInstance()
+        val bitmap = core.renderFrame(spritePtr, currentFrame)
+        bitmap?.let {
+            binding.editorCanvas.setImageBitmap(it)
         }
     }
 
     private fun addLayer() {
-        val layerPtr = AsepriteCore().createLayer(spritePtr, "Layer ${currentLayer + 1}")
-        if (layerPtr != 0L) {
-            currentLayer++
-            updateLayerInfo()
-            Toast.makeText(requireContext(), "Layer added", Toast.LENGTH_SHORT).show()
+        val core = AsepriteCore.getInstance()
+        val layerPtr = core.createLayer(spritePtr, "Layer ${core.getLayerCount(spritePtr) + 1}")
+        if (layerPtr > 0) {
+            updateLayerSpinner()
         }
     }
 
-    private fun undo() {
-        if (AsepriteCore().canUndo(spritePtr)) {
-            AsepriteCore().undo(spritePtr)
-            renderCurrentFrame()
-            Toast.makeText(requireContext(), "Undo", Toast.LENGTH_SHORT).show()
+    private fun deleteLayer() {
+        val core = AsepriteCore.getInstance()
+        if (core.getLayerCount(spritePtr) > 1) {
+            core.deleteLayer(spritePtr, 0)
+            updateLayerSpinner()
         }
     }
 
-    private fun redo() {
-        if (AsepriteCore().canRedo(spritePtr)) {
-            AsepriteCore().redo(spritePtr)
-            renderCurrentFrame()
-            Toast.makeText(requireContext(), "Redo", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun updateFrameInfo() {
-        val frameCount = AsepriteCore().getFrameCount(spritePtr)
-        binding.tvFrameInfo.text = "Frame ${currentFrame + 1} / $frameCount"
-        binding.seekFrame.max = frameCount - 1
-    }
-
-    private fun updateLayerInfo() {
-        val layerCount = AsepriteCore().getLayerCount(spritePtr)
-        binding.tvLayerInfo.text = "Layer ${currentLayer + 1} / $layerCount"
+    private fun updateLayerSpinner() {
+        val core = AsepriteCore.getInstance()
+        val count = core.getLayerCount(spritePtr)
+        // TODO: Update layer spinner adapter
     }
 
     override fun onDestroyView() {

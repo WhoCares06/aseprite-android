@@ -4,49 +4,51 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.aseprite.android.databinding.ActivityNewSpriteBinding
 
 class NewSpriteActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityNewSpriteBinding
+    private lateinit var etWidth: EditText
+    private lateinit var etHeight: EditText
+    private lateinit var rgColorMode: RadioGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityNewSpriteBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_new_sprite)
 
-        // Default values
-        binding.etWidth.setText("256")
-        binding.etHeight.setText("256")
+        etWidth = findViewById(R.id.et_width)
+        etHeight = findViewById(R.id.et_height)
+        rgColorMode = findViewById(R.id.rg_color_mode)
 
-        binding.btnCreate.setOnClickListener { createSprite() }
-        binding.btnCancel.setOnClickListener { finish() }
+        findViewById<Button>(R.id.btn_create).setOnClickListener { createSprite() }
+        findViewById<Button>(R.id.btn_cancel).setOnClickListener { finish() }
     }
 
     private fun createSprite() {
-        val width = binding.etWidth.text.toString().toIntOrNull() ?: 256
-        val height = binding.etHeight.text.toString().toIntOrNull() ?: 256
-        val colorMode = when (binding.spinnerColorMode.selectedItemPosition) {
-            0 -> AsepriteCore.ColorMode.RGB
-            1 -> AsepriteCore.ColorMode.GRAYSCALE
-            2 -> AsepriteCore.ColorMode.INDEXED
-            else -> AsepriteCore.ColorMode.RGB
-        }
+        val width = etWidth.text.toString().toIntOrNull() ?: 256
+        val height = etHeight.text.toString().toIntOrNull() ?: 256
 
-        if (width < 1 || width > 4096 || height < 1 || height > 4096) {
-            Toast.makeText(this, "Invalid dimensions (1-4096)", Toast.LENGTH_SHORT).show()
+        if (width !in 1..4096 || height !in 1..4096) {
+            Toast.makeText(this, "Width/Height must be 1-4096", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val spritePtr = AsepriteCore().createSprite(width, height, colorMode)
-        if (spritePtr != 0L) {
-            val intent = Intent().putExtra("sprite_ptr", spritePtr)
-            setResult(Activity.RESULT_OK, intent)
-            finish()
-        } else {
-            Toast.makeText(this, "Failed to create sprite", Toast.LENGTH_SHORT).show()
+        val colorMode = when (rgColorMode.checkedRadioButtonId) {
+            R.id.rb_rgba -> 0 // RGBA
+            R.id.rb_grayscale -> 1 // Grayscale
+            R.id.rb_indexed -> 2 // Indexed
+            else -> 0
         }
+
+        val result = Intent().apply {
+            putExtra("width", width)
+            putExtra("height", height)
+            putExtra("colorMode", colorMode)
+        }
+        setResult(Activity.RESULT_OK, result)
+        finish()
     }
 }

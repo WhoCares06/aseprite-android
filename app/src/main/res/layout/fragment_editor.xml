@@ -18,151 +18,132 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/Theme.AsepriteAndroid.PopupOverlay"
-            app:title="@string/editor_title" />
+            app:title="Editor" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="@dimen/content_padding"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- Canvas area -->
+        <ImageView
+            android:id="@+id/editor_canvas"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="fitCenter"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/controls_panel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Controls panel -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/controls_panel"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/content_padding"
+            android:background="?attr/colorSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Canvas View -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@android:color/darker_gray"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:id="@+id/canvasView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/canvas_description" />
-
-            </FrameLayout>
-
-            <!-- Frame Controls -->
+            <!-- Frame control -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="?attr/colorSurfaceContainer"
-                android:layout_marginBottom="16dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/content_padding">
 
                 <TextView
-                    android:id="@+id/tvFrameInfo"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/frame_info"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    android:layout_marginBottom="8dp" />
+                    android:text="Frame:"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
 
-                <androidx.appcompat.widget.AppCompatSeekBar
-                    android:id="@+id/seekFrame"
-                    android:layout_width="match_parent"
+                <SeekBar
+                    android:id="@+id/frame_seek_bar"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:max="0"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_weight="1" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/tv_frame_info"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-
-                    <Button
-                        android:id="@+id/btnPrevFrame"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/prev_frame"
-                        android:layout_marginEnd="8dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                    <Button
-                        android:id="@+id/btnNextFrame"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/next_frame"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                </LinearLayout>
-
+                    android:text="0/0"
+                    android:textSize="14sp"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
-            <!-- Layer Controls -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="?attr/colorSurfaceContainer"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:id="@+id/tvLayerInfo"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/layer_info"
-                        android:textSize="16sp" />
-
-                    <Button
-                        android:id="@+id/btnAddLayer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/add_layer"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Undo/Redo Controls -->
+            <!-- Tool buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="@dimen/content_padding">
 
-                <Button
-                    android:id="@+id/btnUndo"
+                <ImageButton
+                    android:id="@+id/btn_undo"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_undo"
+                    android:contentDescription="Undo"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <ImageButton
+                    android:id="@+id/btn_redo"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_redo"
+                    android:contentDescription="Redo"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <ImageButton
+                    android:id="@+id/btn_add_layer"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_add_layer"
+                    android:contentDescription="Add Layer"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <ImageButton
+                    android:id="@+id/btn_delete_layer"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_delete_layer"
+                    android:contentDescription="Delete Layer"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+            </LinearLayout>
+
+            <!-- Layer spinner -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/undo"
-                    android:layout_marginEnd="8dp"
-                    android:enabled="false"
-                    style="@style/Widget.Material3.Button.ElevatedButton" />
+                    android:text="Layer:"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
 
-                <Button
-                    android:id="@+id/btnRedo"
-                    android:layout_width="wrap_content"
+                <Spinner
+                    android:id="@+id/layer_spinner"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/redo"
-                    android:enabled="false"
-                    style="@style/Widget.Material3.Button.ElevatedButton" />
-
+                    android:layout_weight="1" />
             </LinearLayout>
 
         </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -18,12 +18,13 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/Theme.AsepriteAndroid.PopupOverlay"
-            app:title="@string/editor_title" />
+            app:title="Editor" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
-        android:id="@+id/editor_container"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/editor_fragment_container"
+        android:name="com.aseprite.android.ui.EditorFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />

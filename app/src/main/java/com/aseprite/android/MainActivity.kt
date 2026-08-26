@@ -9,144 +9,145 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.navigation.NavigationView
 import androidx.drawerlayout.widget.DrawerLayout
-import com.aseprite.android.databinding.ActivityMainBinding
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
+import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-    private var currentSpritePtr: Long = 0
-    private var currentFilePath: String? = null
-    private lateinit var navController: androidx.navigation.NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-
-    private val OPEN_FILE_REQUEST = 1001
+    private lateinit var navController: NavController
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
-        setSupportActionBar(binding.toolbar)
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
-        // Initialize Aseprite core
-        if (!AsepriteCore.initialize()) {
-            Toast.makeText(this, "Failed to initialize Aseprite core", Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
-
-        setupNavigation()
-    }
-
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navView = findViewById(R.id.nav_view)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as androidx.navigation.fragment.NavHostFragment
         navController = navHostFragment.navController
-        appBarConfiguration = AppBarConfiguration(setOf(R.id.mainFragment), binding.drawerLayout)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        binding.navView.setupWithNavController(navController)
+
+        appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.nav_home, R.id.nav_new_sprite, R.id.nav_open_sprite, R.id.nav_settings),
+            drawerLayout
+        )
+
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
+        NavigationUI.setupWithNavController(navView, navController)
+
+        navView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_new_sprite -> {
+                    val intent = Intent(this, NewSpriteActivity::class.java)
+                    startActivityForResult(intent, 1001)
+                    true
+                }
+                R.id.nav_open_sprite -> {
+                    openFilePicker()
+                    true
+                }
+                R.id.nav_settings -> {
+                    Toast.makeText(this, "Settings - Coming Soon", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
-    fun openFilePicker() {
+    private fun openFilePicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/png", "image/gif", "image/aseprite"))
+            putExtra(DocumentsContract.EXTRA_INITIAL_URI, getExternalFilesDir(null)?.toUri())
         }
-        startActivityForResult(intent, OPEN_FILE_REQUEST)
+        startActivityForResult(intent, 1002)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode != Activity.RESULT_OK || data == null) return
-
-        val uri = data.data ?: return
-
-        when (requestCode) {
-            OPEN_FILE_REQUEST -> {
-                takePersistableUriPermission(uri)
-                loadSpriteFromUri(uri)
-            }
-        }
-    }
-
-    private fun takePersistableUriPermission(uri: Uri) {
-        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        contentResolver.takePersistableUriPermission(uri, flags)
-    }
-
-    private fun loadSpriteFromUri(uri: Uri) {
-        try {
-            val filePath = getPathFromUri(uri)
-            if (filePath != null) {
-                currentSpritePtr = AsepriteCore().openSprite(filePath)
-                if (currentSpritePtr != 0L) {
-                    currentFilePath = filePath
-                    Toast.makeText(this, "Sprite loaded", Toast.LENGTH_SHORT).show()
-                    openEditor()
-                } else {
-                    Toast.makeText(this, "Failed to load sprite", Toast.LENGTH_SHORT).show()
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            when (requestCode) {
+                1001 -> { // New sprite
+                    val width = data.getIntExtra("width", 256)
+                    val height = data.getIntExtra("height", 256)
+                    val colorMode = data.getIntExtra("colorMode", 0)
+                    createNewSprite(width, height, colorMode)
+                }
+                1002 -> { // Open sprite
+                    val uri = data.data ?: return
+                    val path = getPathFromUri(uri)
+                    path?.let { openSprite(it) }
                 }
             }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun getPathFromUri(uri: Uri): String? {
-        // For simplicity, copy to cache dir
-        try {
-            val inputStream = contentResolver.openInputStream(uri) ?: return null
-            val fileName = DocumentsContract.getDocumentId(uri).split(":").last()
-            val cacheFile = File(cacheDir, fileName)
-            val outputStream = FileOutputStream(cacheFile)
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.close()
-            return cacheFile.absolutePath
+        return try {
+            contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                pfd.statSize.toString()
+            }
         } catch (e: Exception) {
-            return null
+            uri.path
         }
     }
 
-    private fun openEditor() {
-        val action = MainFragmentDirections.actionMainFragmentToEditorFragment(currentSpritePtr)
-        navController.navigate(action)
+    private fun createNewSprite(width: Int, height: Int, colorMode: Int) {
+        val core = AsepriteCore.getInstance()
+        val spritePtr = core.createSprite(width, height, colorMode)
+        if (spritePtr > 0) {
+            openEditor(spritePtr)
+        } else {
+            Toast.makeText(this, "Failed to create sprite", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    private fun openSprite(filePath: String) {
+        val core = AsepriteCore.getInstance()
+        val spritePtr = core.openSprite(filePath)
+        if (spritePtr > 0) {
+            openEditor(spritePtr)
+        } else {
+            Toast.makeText(this, "Failed to open sprite", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openEditor(spritePtr: Long) {
+        val intent = Intent(this, EditorActivity::class.java).apply {
+            putExtra("spritePtr", spritePtr)
+        }
+        startActivity(intent)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_about -> {
-                Toast.makeText(this, "Aseprite Android v1.0", Toast.LENGTH_SHORT).show()
+            R.id.action_new -> {
+                val intent = Intent(this, NewSpriteActivity::class.java)
+                startActivityForResult(intent, 1001)
                 true
             }
-            R.id.action_settings -> {
-                Toast.makeText(this, "Settings coming soon", Toast.LENGTH_SHORT).show()
+            R.id.action_open -> {
+                openFilePicker()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        AsepriteCore.shutdown()
     }
 }

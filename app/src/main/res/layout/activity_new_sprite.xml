@@ -5,100 +5,135 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
+    android:padding="@dimen/content_padding"
     tools:context=".NewSpriteActivity">
 
     <TextView
-        android:id="@+id/tvTitle"
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/new_sprite_title"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="32dp" />
+        android:layout_marginTop="24dp" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilWidth"
-        android:layout_width="match_parent"
+        android:id="@+id/til_width"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/width"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp">
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etWidth"
+            android:id="@+id/et_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/width"
             android:inputType="number"
-            android:maxLength="4" />
-
+            android:text="256" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilHeight"
-        android:layout_width="match_parent"
+        android:id="@+id/til_height"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="@string/height"
-        app:layout_constraintTop_toBottomOf="@id/tilWidth"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintTop_toBottomOf="@id/til_width"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp">
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etHeight"
+            android:id="@+id/et_height"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/height"
             android:inputType="number"
-            android:maxLength="4" />
-
+            android:text="256" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilColorMode"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tv_color_mode"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="@string/color_mode"
-        app:layout_constraintTop_toBottomOf="@id/tilHeight"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="32dp">
+        android:text="@string/color_mode"
+        android:textSize="16sp"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/til_height"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/spinnerColorMode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <RadioGroup
+        android:id="@+id/rg_color_mode"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_color_mode"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <RadioButton
+            android:id="@+id/rb_rgba"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rgba"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_grayscale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/grayscale"
+            android:layout_marginStart="16dp" />
+
+        <RadioButton
+            android:id="@+id/rb_indexed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/indexed"
+            android:layout_marginStart="16dp" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/rg_color_mode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            android:layout_marginEnd="16dp"
-            style="@style/Widget.Material3.Button.TextButton" />
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <Button
-            android:id="@+id/btnCreate"
+            android:id="@+id/btn_create"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/create"
-            style="@style/Widget.Material3.Button.ElevatedButton" />
+            android:layout_marginStart="16dp" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

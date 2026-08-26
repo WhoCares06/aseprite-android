@@ -17,6 +17,12 @@ add_library(aseprite_core STATIC
     aseprite_bridge.cpp
 )
 
+target_link_libraries(aseprite_core
+    ${androidCmake_LIBRARIES}
+    log
+    android
+)
+
 # Main JNI library - only jni_main.cpp, NOT aseprite_bridge.cpp (already in aseprite_core)
 add_library(aseprite SHARED
     jni_main.cpp
@@ -30,6 +36,7 @@ target_link_libraries(aseprite
     EGL
     GLESv3
     dl
+    atomic
 )
 
 # Find Skia (from prebuilt SkiaSharp)
