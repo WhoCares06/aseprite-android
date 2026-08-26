@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include <string>
 
-#include "aseprite_bridge.cpp" // Include bridge for helper functions
+#include "aseprite_bridge.h"
 
 #define LOG_TAG "AsepriteAndroid"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)

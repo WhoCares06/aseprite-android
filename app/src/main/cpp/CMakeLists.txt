@@ -12,27 +12,14 @@ if(ANDROID)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions -DANDROID")
 endif()
 
-# Include directories
-include_directories(
-    ${CMAKE_SOURCE_DIR}/../../../aseprite-source/src
-    ${CMAKE_SOURCE_DIR}/../../../aseprite-source/third_party
-)
-
-# Find Skia - we'll need to build or download it
-# For now, we'll create a placeholder that shows the structure
-# In practice, you'd need to build Skia for Android first
-
-# Aseprite core library
+# Aseprite core library (pure C++, no JNI)
 add_library(aseprite_core STATIC
-    # Core source files would go here
-    # We'll create a minimal bridge first
     aseprite_bridge.cpp
 )
 
 # Main JNI library
 add_library(aseprite SHARED
     jni_main.cpp
-    aseprite_bridge.cpp
 )
 
 target_link_libraries(aseprite
@@ -45,7 +32,7 @@ target_link_libraries(aseprite
     dl
 )
 
-# Find Skia
+# Find Skia (from prebuilt SkiaSharp)
 find_library(SKIA_LIB skia)
 if(SKIA_LIB)
     target_link_libraries(aseprite ${SKIA_LIB})

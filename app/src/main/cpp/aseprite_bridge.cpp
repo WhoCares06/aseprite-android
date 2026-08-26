@@ -2,180 +2,136 @@
 // This is a pure C++ class - NO JNI exports here
 // JNI exports are in jni_main.cpp
 
-#include <jni.h>
+#include "aseprite_bridge.h"
+
 #include <android/log.h>
-#include <string>
-#include <memory>
 
-// Forward declare Aseprite types to avoid including full headers
-namespace doc {
-    class Sprite;
-    class Layer;
-    class Frame;
-    class Image;
-    class Color;
-    class Palette;
-    class Tileset;
-    class Tilemap;
-    class UndoHistory;
-    enum class ColorMode { RGB, GRAYSCALE, INDEXED };
+#define LOG_TAG "AsepriteBridge"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+
+// Bridge class implementation
+AsepriteBridge::AsepriteBridge() : initialized_(false) {}
+
+AsepriteBridge::~AsepriteBridge() {
+    if (initialized_) shutdown();
 }
 
-namespace app {
-    class App;
-    class Context;
-    class Tool;
-    class ToolBox;
-    class PaletteManager;
+AsepriteBridge& AsepriteBridge::instance() {
+    static AsepriteBridge bridge;
+    return bridge;
 }
 
-namespace os {
-    class EventQueue;
-    class Window;
-    class Surface;
-    class FileHandle;
-    class System;
+bool AsepriteBridge::initialize() {
+    if (initialized_) return true;
+    
+    LOGD("Initializing Aseprite core...");
+    
+    // TODO: Actual initialization sequence:
+    // 1. Initialize os::System
+    // 2. Initialize os::EventQueue
+    // 3. Initialize app::App
+    // 4. Load Skia backend
+    // 5. Initialize LAF (Layout and Fonts)
+    
+    // Example:
+    // os::System::init();
+    // os::EventQueue::init();
+    // app::App::init();
+    
+    initialized_ = true;
+    return true;
 }
 
-// Skia forward declarations
-namespace skia {
-    class Bitmap;
-    class Canvas;
-    class Paint;
-    class Path;
-    class Image;
+void AsepriteBridge::shutdown() {
+    if (!initialized_) return;
+    
+    LOGD("Shutting down Aseprite core...");
+    
+    // TODO: Shutdown sequence
+    // app::App::shutdown();
+    // os::EventQueue::shutdown();
+    // os::System::shutdown();
+    
+    initialized_ = false;
 }
 
-// Bridge class to manage Aseprite core lifecycle
-class AsepriteBridge {
-public:
-    static AsepriteBridge& instance() {
-        static AsepriteBridge bridge;
-        return bridge;
-    }
-    
-    bool initialize() {
-        if (initialized_) return true;
-        
-        __android_log_print(ANDROID_LOG_DEBUG, "AsepriteBridge", "Initializing Aseprite core...");
-        
-        // TODO: Actual initialization sequence:
-        // 1. Initialize os::System
-        // 2. Initialize os::EventQueue
-        // 3. Initialize app::App
-        // 4. Load Skia backend
-        // 5. Initialize LAF (Layout and Fonts)
-        
-        // Example:
-        // os::System::init();
-        // os::EventQueue::init();
-        // app::App::init();
-        
-        initialized_ = true;
-        return true;
-    }
-    
-    void shutdown() {
-        if (!initialized_) return;
-        
-        __android_log_print(ANDROID_LOG_DEBUG, "AsepriteBridge", "Shutting down Aseprite core...");
-        
-        // TODO: Shutdown sequence
-        // app::App::shutdown();
-        // os::EventQueue::shutdown();
-        // os::System::shutdown();
-        
-        initialized_ = false;
-    }
-    
-    bool isInitialized() const { return initialized_; }
-    
-    // Sprite management
-    doc::Sprite* createSprite(int width, int height, doc::ColorMode colorMode) {
-        if (!initialized_) return nullptr;
-        
-        // TODO: Create actual sprite
-        // doc::Sprite* sprite = new doc::Sprite(width, height, colorMode);
-        // return sprite;
-        return nullptr;
-    }
-    
-    doc::Sprite* openSprite(const char* path) {
-        if (!initialized_) return nullptr;
-        
-        // TODO: Load sprite from file
-        // doc::Sprite* sprite = app::App::instance()->openSprite(path);
-        return nullptr;
-    }
-    
-    bool saveSprite(doc::Sprite* sprite, const char* path) {
-        if (!initialized_ || !sprite) return false;
-        
-        // TODO: Save sprite
-        // app::App::instance()->saveSprite(sprite, path);
-        return false;
-    }
-    
-    // Rendering
-    skia::Bitmap* renderFrame(doc::Sprite* sprite, int frameIndex) {
-        if (!initialized_ || !sprite) return nullptr;
-        
-        // TODO: Render using Skia
-        // doc::Frame* frame = sprite->getFrame(frameIndex);
-        // Skia bitmap rendering...
-        return nullptr;
-    }
-    
-    // Undo/Redo
-    void undo(doc::Sprite* sprite) {
-        if (!sprite) return;
-        // sprite->getUndoHistory()->undo();
-    }
-    
-    void redo(doc::Sprite* sprite) {
-        if (!sprite) return;
-        // sprite->getUndoHistory()->redo();
-    }
-    
-    bool canUndo(doc::Sprite* sprite) {
-        if (!sprite) return false;
-        // return sprite->getUndoHistory()->canUndo();
-        return false;
-    }
-    
-    bool canRedo(doc::Sprite* sprite) {
-        if (!sprite) return false;
-        // return sprite->getUndoHistory()->canRedo();
-        return false;
-    }
-    
-    // Export
-    bool exportPNG(doc::Sprite* sprite, const char* path) {
-        if (!initialized_ || !sprite) return false;
-        // app::App::instance()->exportSprite(sprite, path, "png");
-        return false;
-    }
-    
-    bool exportGIF(doc::Sprite* sprite, const char* path) {
-        if (!initialized_ || !sprite) return false;
-        // app::App::instance()->exportSprite(sprite, path, "gif");
-        return false;
-    }
-    
-    bool exportSpriteSheet(doc::Sprite* sprite, const char* path, int columns) {
-        if (!initialized_ || !sprite) return false;
-        // app::App::instance()->exportSpriteSheet(sprite, path, columns);
-        return false;
-    }
+bool AsepriteBridge::isInitialized() const { return initialized_; }
 
-private:
-    AsepriteBridge() : initialized_(false) {}
-    ~AsepriteBridge() { if (initialized_) shutdown(); }
+doc::Sprite* AsepriteBridge::createSprite(int width, int height, doc::ColorMode colorMode) {
+    if (!initialized_) return nullptr;
     
-    bool initialized_ = false;
-};
+    // TODO: Create actual sprite
+    // doc::Sprite* sprite = new doc::Sprite(width, height, colorMode);
+    // return sprite;
+    return nullptr;
+}
 
-// JNI Helper functions
+doc::Sprite* AsepriteBridge::openSprite(const char* path) {
+    if (!initialized_) return nullptr;
+    
+    // TODO: Load sprite from file
+    // doc::Sprite* sprite = app::App::instance()->openSprite(path);
+    return nullptr;
+}
+
+bool AsepriteBridge::saveSprite(doc::Sprite* sprite, const char* path) {
+    if (!initialized_ || !sprite) return false;
+    
+    // TODO: Save sprite
+    // app::App::instance()->saveSprite(sprite, path);
+    return false;
+}
+
+skia::Bitmap* AsepriteBridge::renderFrame(doc::Sprite* sprite, int frameIndex) {
+    if (!initialized_ || !sprite) return nullptr;
+    
+    // TODO: Render using Skia
+    // doc::Frame* frame = sprite->getFrame(frameIndex);
+    // Skia bitmap rendering...
+    return nullptr;
+}
+
+void AsepriteBridge::undo(doc::Sprite* sprite) {
+    if (!sprite) return;
+    // sprite->getUndoHistory()->undo();
+}
+
+void AsepriteBridge::redo(doc::Sprite* sprite) {
+    if (!sprite) return;
+    // sprite->getUndoHistory()->redo();
+}
+
+bool AsepriteBridge::canUndo(doc::Sprite* sprite) {
+    if (!sprite) return false;
+    // return sprite->getUndoHistory()->canUndo();
+    return false;
+}
+
+bool AsepriteBridge::canRedo(doc::Sprite* sprite) {
+    if (!sprite) return false;
+    // return sprite->getUndoHistory()->canRedo();
+    return false;
+}
+
+bool AsepriteBridge::exportPNG(doc::Sprite* sprite, const char* path) {
+    if (!initialized_ || !sprite) return false;
+    // app::App::instance()->exportSprite(sprite, path, "png");
+    return false;
+}
+
+bool AsepriteBridge::exportGIF(doc::Sprite* sprite, const char* path) {
+    if (!initialized_ || !sprite) return false;
+    // app::App::instance()->exportSprite(sprite, path, "gif");
+    return false;
+}
+
+bool AsepriteBridge::exportSpriteSheet(doc::Sprite* sprite, const char* path, int columns) {
+    if (!initialized_ || !sprite) return false;
+    // app::App::instance()->exportSpriteSheet(sprite, path, columns);
+    return false;
+}
+
+// JNI Helper functions implementation
 namespace JNIUtil {
 
 jobject createJavaBitmap(JNIEnv* env, void* skiaBitmap) {
@@ -199,7 +155,6 @@ std::string jstringToStdString(JNIEnv* env, jstring jstr) {
 // C-style interface for JNI (called from jni_main.cpp)
 extern "C" {
 
-// Bridge access
 AsepriteBridge* getBridge() {
     return &AsepriteBridge::instance();
 }
