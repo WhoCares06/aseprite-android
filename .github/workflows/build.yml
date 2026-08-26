@@ -21,6 +21,9 @@ jobs:
     name: Build Skia for Android (arm64-v8a)
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout Skia
         uses: actions/checkout@v4
@@ -69,15 +72,17 @@ jobs:
           ls -la out/android_arm64/
           cat out/android_arm64/args.gn
 
-      - name: List all ninja targets containing skia
+      - name: List all ninja targets
         working-directory: skia
         run: |
-          ninja -C out/android_arm64 -t targets all | grep -i skia | head -30
+          ninja -C out/android_arm64 -t targets all 2>&1 | head -50
 
-      - name: Build all targets (default)
+      - name: Build all targets with ninja
         working-directory: skia
         run: |
-          ninja -C out/android_arm64 -j$(nproc) 2>&1 | tail -200
+          echo "Starting ninja build..."
+          ninja -C out/android_arm64 -j$(nproc) 2>&1
+          echo "Ninja build finished with exit code: $?"
 
       - name: Find all built libraries
         working-directory: skia
@@ -90,8 +95,9 @@ jobs:
           ls -la out/android_arm64/obj/ 2>/dev/null | head -30 || true
 
       - name: Verify libskia.a
+        working-directory: skia
         run: |
-          ls -la skia/out/android_arm64/libskia.a
+          ls -la out/android_arm64/libskia.a
 
       - name: Package Skia artifacts
         working-directory: skia
