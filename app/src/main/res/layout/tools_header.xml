@@ -2,15 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/aseprite_toolbar">
+    android:orientation="horizontal"
+    android:padding="@dimen/content_padding"
+    android:background="?attr/colorSurfaceContainerHighest">
+
+    <ImageView
+        android:id="@+id/tools_icon"
+        android:layout_width="@dimen/tool_icon_size"
+        android:layout_height="@dimen/tool_icon_size"
+        android:src="@drawable/ic_edit"
+        android:contentDescription="@string/tools" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="@string/tools"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-        android:textColor="@android:color/white" />
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:textColor="?attr/colorOnSurface" />
 
 </LinearLayout>

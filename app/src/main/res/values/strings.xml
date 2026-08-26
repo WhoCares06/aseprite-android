@@ -22,4 +22,11 @@
     <string name="export_sprite_sheet">Export Sprite Sheet</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
+    <string name="layers">Layers</string>
+    <string name="frames">Frames</string>
+    <string name="tools">Tools</string>
+    <string name="zoom_in">Zoom In</string>
+    <string name="zoom_out">Zoom Out</string>
+    <string name="onion_skin">Onion Skin</string>
+    <string name="grid">Grid</string>
 </resources>

@@ -33,6 +33,77 @@ static inline jlong ptrToJlong(uintptr_t value) {
     return u.j;
 }
 
+// Create Android Bitmap using Bitmap.createBitmap via JNI
+static jobject createBitmap(JNIEnv* env, int width, int height) {
+    jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
+    if (!bitmapClass) {
+        LOGE("Failed to find Bitmap class");
+        return nullptr;
+    }
+
+    jmethodID createBitmapMethod = env->GetStaticMethodID(bitmapClass, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+    if (!createBitmapMethod) {
+        LOGE("Failed to find createBitmap method");
+        return nullptr;
+    }
+
+    jclass configClass = env->FindClass("android/graphics/Bitmap$Config");
+    if (!configClass) {
+        LOGE("Failed to find Bitmap.Config class");
+        return nullptr;
+    }
+
+    jfieldID argb8888Field = env->GetStaticFieldID(configClass, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
+    if (!argb8888Field) {
+        LOGE("Failed to find ARGB_8888 field");
+        return nullptr;
+    }
+
+    jobject config = env->GetStaticObjectField(configClass, argb8888Field);
+    if (!config) {
+        LOGE("Failed to get ARGB_8888 config");
+        return nullptr;
+    }
+
+    jobject bitmap = env->CallStaticObjectMethod(bitmapClass, createBitmapMethod, width, height, config);
+    if (!bitmap) {
+        LOGE("Failed to create bitmap");
+        return nullptr;
+    }
+
+    return bitmap;
+}
+
+// Fill bitmap with checkerboard pattern (transparency indicator)
+static void fillCheckerboard(JNIEnv* env, jobject bitmap, int width, int height) {
+    // Use Bitmap.setPixels to fill the bitmap
+    jclass bitmapClass = env->GetObjectClass(bitmap);
+    jmethodID setPixelsMethod = env->GetMethodID(bitmapClass, "setPixels", "([IIIII)V");
+    if (!setPixelsMethod) {
+        LOGE("Failed to find setPixels method");
+        return;
+    }
+
+    // Create int array with checkerboard pattern
+    jintArray pixels = env->NewIntArray(width * height);
+    if (!pixels) return;
+
+    // Create buffer and fill
+    jint* pixelData = env->GetIntArrayElements(pixels, nullptr);
+    if (!pixelData) return;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            bool dark = ((x / 8) + (y / 8)) % 2 == 0;
+            pixelData[y * width + x] = dark ? 0xFFCCCCCC : 0xFFFFFFFF;
+        }
+    }
+
+    env->ReleaseIntArrayElements(pixels, pixelData, 0);
+    env->CallVoidMethod(bitmap, setPixelsMethod, pixels, 0, width, 0, 0, width, height);
+    env->DeleteLocalRef(pixels);
+}
+
 extern "C" {
 
 // Initialize
@@ -101,14 +172,6 @@ Java_com_aseprite_android_AsepriteCore_getHeight(JNIEnv* env, jobject thiz, jlon
     return static_cast<jint>(bridge->getHeight(jlongToPtr(spritePtr)));
 }
 
-// Render frame
-JNIEXPORT jobject JNICALL
-Java_com_aseprite_android_AsepriteCore_renderFrame(JNIEnv* env, jobject thiz, jlong spritePtr, jint frameIndex) {
-    LOGD("JNI: renderFrame %d", frameIndex);
-    AsepriteBridge* bridge = getBridge();
-    return bridge->renderFrame(env, jlongToPtr(spritePtr), static_cast<int>(frameIndex));
-}
-
 // Get frame count
 JNIEXPORT jint JNICALL
 Java_com_aseprite_android_AsepriteCore_getFrameCount(JNIEnv* env, jobject thiz, jlong spritePtr) {
@@ -121,6 +184,24 @@ JNIEXPORT jint JNICALL
 Java_com_aseprite_android_AsepriteCore_getLayerCount(JNIEnv* env, jobject thiz, jlong spritePtr) {
     AsepriteBridge* bridge = getBridge();
     return static_cast<jint>(bridge->getLayerCount(jlongToPtr(spritePtr)));
+}
+
+// Render frame - using Bitmap.createBitmap via JNI (no AndroidBitmap needed)
+JNIEXPORT jobject JNICALL
+Java_com_aseprite_android_AsepriteCore_renderFrame(JNIEnv* env, jobject thiz, jlong spritePtr, jint frameIndex) {
+    LOGD("JNI: renderFrame %d", frameIndex);
+    AsepriteBridge* bridge = getBridge();
+    doc::Sprite* sprite = bridge->getSprite(jlongToPtr(spritePtr));
+    if (!sprite) return nullptr;
+
+    int width = bridge->getWidth(jlongToPtr(spritePtr));
+    int height = bridge->getHeight(jlongToPtr(spritePtr));
+
+    jobject bitmap = createBitmap(env, width, height);
+    if (!bitmap) return nullptr;
+
+    fillCheckerboard(env, bitmap, width, height);
+    return bitmap;
 }
 
 // Create layer

@@ -5,7 +5,6 @@
 #include "aseprite_bridge.h"
 
 #include <android/log.h>
-#include <android/bitmap.h>
 #include <memory>
 #include <unordered_map>
 #include <mutex>
@@ -144,72 +143,11 @@ int AsepriteBridge::getLayerCount(uintptr_t spritePtr) {
     return 1;
 }
 
+// NOTE: renderFrame moved to jni_main.cpp to avoid linking against AndroidBitmap
+// This bridge method is kept for API compatibility but returns null
 jobject AsepriteBridge::renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameIndex) {
-    LOGD("Rendering frame %d", frameIndex);
-    doc::Sprite* sprite = getSprite(spritePtr);
-    if (!sprite) return nullptr;
-
-    // Create a dummy bitmap for now
-    int width = getWidth(spritePtr);
-    int height = getHeight(spritePtr);
-
-    // Create Android Bitmap using Bitmap.createBitmap
-    jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
-    if (!bitmapClass) {
-        LOGE("Failed to find Bitmap class");
-        return nullptr;
-    }
-
-    jmethodID createBitmapMethod = env->GetStaticMethodID(bitmapClass, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-    if (!createBitmapMethod) {
-        LOGE("Failed to find createBitmap method");
-        return nullptr;
-    }
-
-    jclass configClass = env->FindClass("android/graphics/Bitmap$Config");
-    if (!configClass) {
-        LOGE("Failed to find Bitmap.Config class");
-        return nullptr;
-    }
-
-    jfieldID argb8888Field = env->GetStaticFieldID(configClass, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
-    if (!argb8888Field) {
-        LOGE("Failed to find ARGB_8888 field");
-        return nullptr;
-    }
-
-    jobject config = env->GetStaticObjectField(configClass, argb8888Field);
-    if (!config) {
-        LOGE("Failed to get ARGB_8888 config");
-        return nullptr;
-    }
-
-    jobject bitmap = env->CallStaticObjectMethod(bitmapClass, createBitmapMethod, width, height, config);
-    if (!bitmap) {
-        LOGE("Failed to create bitmap");
-        return nullptr;
-    }
-
-    // Fill with dummy data (checkerboard pattern for transparency)
-    AndroidBitmapInfo info;
-    void* pixels;
-    int ret = AndroidBitmap_getInfo(env, bitmap, &info);
-    if (ret >= 0) {
-        ret = AndroidBitmap_lockPixels(env, bitmap, &pixels);
-        if (ret >= 0) {
-            uint32_t* pixelData = static_cast<uint32_t*>(pixels);
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    // Checkerboard pattern for transparency
-                    bool dark = ((x / 8) + (y / 8)) % 2 == 0;
-                    pixelData[y * width + x] = dark ? 0xFFCCCCCC : 0xFFFFFFFF;
-                }
-            }
-            AndroidBitmap_unlockPixels(env, bitmap);
-        }
-    }
-
-    return bitmap;
+    LOGD("renderFrame called from bridge - should use JNI layer instead");
+    return nullptr;
 }
 
 uintptr_t AsepriteBridge::createLayer(uintptr_t spritePtr, const char* name) {
