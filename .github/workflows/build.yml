@@ -48,20 +48,19 @@ jobs:
       - name: Generate build files
         working-directory: skia
         run: |
-          cat > args.gn << 'GN_ARGS'
-          target_os = "android"
-          target_cpu = "arm64"
-          is_debug = false
-          is_official_build = true
-          skia_use_system_expat = false
-          skia_use_system_icu = false
-          skia_use_system_libjpeg_turbo = false
-          skia_use_system_libpng = false
-          skia_use_system_libwebp = false
-          skia_use_system_zlib = false
-          extra_cflags_cc = [ "-frtti" ]
-          GN_ARGS
-          bin/gn gen out/android_arm64 --args="$(cat args.gn | tr -d '\n')"
+          bin/gn gen out/android_arm64 --args='
+            target_os="android"
+            target_cpu="arm64"
+            is_debug=false
+            is_official_build=true
+            skia_use_system_expat=false
+            skia_use_system_icu=false
+            skia_use_system_libjpeg_turbo=false
+            skia_use_system_libpng=false
+            skia_use_system_libwebp=false
+            skia_use_system_zlib=false
+            extra_cflags_cc=["-frtti"]
+          '
 
       - name: Check generated build files
         working-directory: skia
