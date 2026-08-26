@@ -74,10 +74,10 @@ jobs:
         run: |
           ninja -C out/android_arm64 -t targets all | grep -i skia | head -30
 
-      - name: Build libskia target explicitly
+      - name: Build all targets (default)
         working-directory: skia
         run: |
-          ninja -C out/android_arm64 -j$(nproc) libskia 2>&1 | tail -100
+          ninja -C out/android_arm64 -j$(nproc) 2>&1 | tail -200
 
       - name: Find all built libraries
         working-directory: skia
