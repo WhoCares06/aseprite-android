@@ -34,27 +34,13 @@ jobs:
           echo "=== SkiaSharp contents ==="
           find skia-sharp -name "*.so" | head -20
 
-      - name: Copy Skia libs for all ABIs
+      - name: Copy Skia libs for arm64-v8a
         run: |
           mkdir -p skia-prebuilt/arm64-v8a/include
-          mkdir -p skia-prebuilt/armeabi-v7a/include
-          mkdir -p skia-prebuilt/x86/include
-          mkdir -p skia-prebuilt/x64/include
-          
-          # arm64-v8a
           cp skia-sharp/runtimes/android-arm64/native/libSkiaSharp.so skia-prebuilt/arm64-v8a/libskia.so
-          # armeabi-v7a
-          cp skia-sharp/runtimes/android-arm/native/libSkiaSharp.so skia-prebuilt/armeabi-v7a/libskia.so
-          # x86
-          cp skia-sharp/runtimes/android-x86/native/libSkiaSharp.so skia-prebuilt/x86/libskia.so
-          # x64
-          cp skia-sharp/runtimes/android-x64/native/libSkiaSharp.so skia-prebuilt/x64/libskia.so
-          
-          # Copy headers (from any ABI, they're the same)
           cp -r skia-sharp/runtimes/android-arm64/native/include/* skia-prebuilt/arm64-v8a/include/ 2>/dev/null || true
-          
           echo "=== Copied libs ==="
-          ls -la skia-prebuilt/*/libskia.so
+          ls -la skia-prebuilt/arm64-v8a/libskia.so
 
       - name: Upload Skia artifacts
         uses: actions/upload-artifact@v4
@@ -131,7 +117,7 @@ jobs:
           )
 
           add_library(aseprite_core STATIC aseprite_bridge.cpp)
-          add_library(aseprite SHARED jni_main.cpp aseprite_bridge.cpp)
+          add_library(aseprite SHARED jni_main.cpp)
 
           target_link_libraries(aseprite
             aseprite_core

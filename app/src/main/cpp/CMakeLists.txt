@@ -17,7 +17,7 @@ add_library(aseprite_core STATIC
     aseprite_bridge.cpp
 )
 
-# Main JNI library
+# Main JNI library - only jni_main.cpp, NOT aseprite_bridge.cpp (already in aseprite_core)
 add_library(aseprite SHARED
     jni_main.cpp
 )
