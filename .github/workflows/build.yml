@@ -68,18 +68,26 @@ jobs:
         run: |
           ls -la out/android_arm64/
           cat out/android_arm64/args.gn
-          ninja -C out/android_arm64 -t targets all | grep -E "(libskia|skia)" | head -20
+
+      - name: List all ninja targets containing skia
+        working-directory: skia
+        run: |
+          ninja -C out/android_arm64 -t targets all | grep -i skia | head -30
 
       - name: Build Skia (verbose)
         working-directory: skia
         run: |
-          ninja -C out/android_arm64 -j$(nproc) -v 2>&1 | head -500
+          ninja -C out/android_arm64 -j$(nproc) -v 2>&1 | tail -100
 
-      - name: Check what was built
+      - name: Find all built libraries
         working-directory: skia
         run: |
-          find out/android_arm64 -name "*.a" -o -name "libskia*" | head -20
-          ls -la out/android_arm64/obj/ 2>/dev/null | head -20 || true
+          echo "=== All .a files ==="
+          find out/android_arm64 -name "*.a" | head -30
+          echo "=== All libskia* ==="
+          find out/android_arm64 -name "libskia*" | head -30
+          echo "=== obj directory ==="
+          ls -la out/android_arm64/obj/ 2>/dev/null | head -30 || true
 
       - name: Verify libskia.a
         run: |
