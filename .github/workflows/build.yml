@@ -36,13 +36,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 git clang lld gn ninja-build wget
+          sudo apt-get install -y python3 git clang lld gn ninja-build
 
-      - name: Download Android NDK
-        run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-${{ env.ANDROID_NDK_VERSION }}-linux.zip
-          unzip -q android-ndk-${{ env.ANDROID_NDK_VERSION }}-linux.zip
-          echo "NDK_ROOT=$(pwd)/android-ndk-${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+      - name: Setup Android NDK
+        uses: android-actions/setup-android@v3
+        with:
+          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
 
       - name: Sync Skia deps
         working-directory: skia
@@ -56,8 +55,6 @@ jobs:
 
       - name: Generate build files for Android arm64
         working-directory: skia
-        env:
-          NDK_ROOT: ${{ env.NDK_ROOT }}
         run: |
           bin/gn gen out/android_arm64 --args='
             target_os="android"
@@ -74,7 +71,6 @@ jobs:
             skia_use_fontconfig=false
             skia_use_freetype=true
             extra_cflags_cc=["-frtti"]
-            ndk="${NDK_ROOT}"
             ndk_api=24
           '
 
