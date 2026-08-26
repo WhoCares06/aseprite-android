@@ -5,6 +5,7 @@
 
 #include <jni.h>
 #include <string>
+#include <android/bitmap.h>
 
 // Forward declare Aseprite types
 namespace doc {
@@ -12,79 +13,55 @@ namespace doc {
     class Layer;
     class Frame;
     class Image;
-    class Color;
+    enum class ColorMode : int;
     class Palette;
-    class Tileset;
-    class Tilemap;
-    class UndoHistory;
-    enum class ColorMode { RGB, GRAYSCALE, INDEXED };
 }
 
-namespace app {
-    class App;
-    class Context;
-    class Tool;
-    class ToolBox;
-    class PaletteManager;
-}
-
-namespace os {
-    class EventQueue;
-    class Window;
-    class Surface;
-    class FileHandle;
-    class System;
-}
-
-namespace skia {
-    class Bitmap;
-    class Canvas;
-    class Paint;
-    class Path;
-    class Image;
-}
-
-// Bridge class to manage Aseprite core lifecycle
 class AsepriteBridge {
 public:
-    static AsepriteBridge& instance();
-    
-    bool initialize();
-    void shutdown();
-    bool isInitialized() const;
-    
-    // Sprite management
-    doc::Sprite* createSprite(int width, int height, doc::ColorMode colorMode);
-    doc::Sprite* openSprite(const char* path);
-    bool saveSprite(doc::Sprite* sprite, const char* path);
-    
-    // Rendering
-    skia::Bitmap* renderFrame(doc::Sprite* sprite, int frameIndex);
-    
-    // Undo/Redo
-    void undo(doc::Sprite* sprite);
-    void redo(doc::Sprite* sprite);
-    bool canUndo(doc::Sprite* sprite);
-    bool canRedo(doc::Sprite* sprite);
-    
-    // Export
-    bool exportPNG(doc::Sprite* sprite, const char* path);
-    bool exportGIF(doc::Sprite* sprite, const char* path);
-    bool exportSpriteSheet(doc::Sprite* sprite, const char* path, int columns);
-
-private:
     AsepriteBridge();
     ~AsepriteBridge();
-    bool initialized_ = false;
+
+    // Initialize/shutdown
+    bool initialize();
+    void shutdown();
+
+    // Sprite management
+    uintptr_t createSprite(int width, int height, int colorMode);
+    uintptr_t openSprite(const char* filePath);
+    bool saveSprite(uintptr_t spritePtr, const char* filePath);
+
+    // Sprite properties
+    int getWidth(uintptr_t spritePtr);
+    int getHeight(uintptr_t spritePtr);
+    int getFrameCount(uintptr_t spritePtr);
+    int getLayerCount(uintptr_t spritePtr);
+
+    // Frame rendering
+    jobject renderFrame(JNIEnv* env, uintptr_t spritePtr, int frameIndex);
+
+    // Layer operations
+    uintptr_t createLayer(uintptr_t spritePtr, const char* name);
+    void deleteLayer(uintptr_t spritePtr, int layerIndex);
+
+    // Pixel operations
+    int getPixel(uintptr_t spritePtr, int frame, int layer, int x, int y);
+    void setPixel(uintptr_t spritePtr, int frame, int layer, int x, int y, int color);
+
+    // Undo/Redo
+    void undo(uintptr_t spritePtr);
+    void redo(uintptr_t spritePtr);
+    bool canUndo(uintptr_t spritePtr);
+    bool canRedo(uintptr_t spritePtr);
+
+    // Export
+    bool exportPNG(uintptr_t spritePtr, const char* filePath);
+    bool exportGIF(uintptr_t spritePtr, const char* filePath);
+    bool exportSpriteSheet(uintptr_t spritePtr, const char* filePath, int columns);
+
+private:
+    doc::Sprite* getSprite(uintptr_t spritePtr);
+    
+    class Impl;
+    std::unique_ptr<Impl> pImpl;
 };
-
-// JNI Helper functions
-namespace JNIUtil {
-    jobject createJavaBitmap(JNIEnv* env, void* skiaBitmap);
-    std::string jstringToStdString(JNIEnv* env, jstring jstr);
-}
-
-// C-style interface for JNI (called from jni_main.cpp)
-extern "C" {
-    AsepriteBridge* getBridge();
-}
