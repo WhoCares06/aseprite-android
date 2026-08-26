@@ -23,12 +23,12 @@ target_link_libraries(aseprite_core
     android
 )
 
-# Main JNI library - only jni_main.cpp, NOT aseprite_bridge.cpp (already in aseprite_core)
-add_library(aseprite SHARED
+# Main JNI library - named aseprite_core to match System.loadLibrary("aseprite_core")
+add_library(aseprite_core SHARED
     jni_main.cpp
 )
 
-target_link_libraries(aseprite
+target_link_libraries(aseprite_core
     aseprite_core
     ${androidCmake_LIBRARIES}
     log
@@ -42,7 +42,7 @@ target_link_libraries(aseprite
 # Find Skia (from prebuilt SkiaSharp)
 find_library(SKIA_LIB skia)
 if(SKIA_LIB)
-    target_link_libraries(aseprite ${SKIA_LIB})
+    target_link_libraries(aseprite_core ${SKIA_LIB})
     message(STATUS "Found Skia: ${SKIA_LIB}")
 else()
     message(WARNING "Skia not found - you need to build Skia for Android first")
@@ -50,6 +50,6 @@ else()
 endif()
 
 # Set output directory
-set_target_properties(aseprite PROPERTIES
+set_target_properties(aseprite_core PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../../../jniLibs/${ANDROID_ABI}
 )
