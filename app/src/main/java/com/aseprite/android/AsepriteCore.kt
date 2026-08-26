@@ -121,27 +121,49 @@ class AsepriteCore private constructor() {
     }
     
     // Native methods - match JNI export names (Java_com_aseprite_android_AsepriteCore_<method>)
-    external fun nativeInitialize(): Boolean
-    external fun nativeShutdown()
-    external fun nativeCreateSprite(width: Int, height: Int, colorMode: Int): Long
-    external fun nativeOpenSprite(filePath: String): Long
-    external fun nativeSaveSprite(spritePtr: Long, filePath: String): Boolean
-    external fun nativeGetWidth(spritePtr: Long): Int
-    external fun nativeGetHeight(spritePtr: Long): Int
-    external fun nativeRenderFrame(spritePtr: Long, frameIndex: Int): Bitmap?
-    external fun nativeGetFrameCount(spritePtr: Long): Int
-    external fun nativeGetLayerCount(spritePtr: Long): Int
-    external fun nativeCreateLayer(spritePtr: Long, name: String): Long
-    external fun nativeDeleteLayer(spritePtr: Long, layerIndex: Int)
-    external fun nativeGetPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int
-    external fun nativeSetPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int)
-    external fun nativeUndo(spritePtr: Long)
-    external fun nativeRedo(spritePtr: Long)
-    external fun nativeCanUndo(spritePtr: Long): Boolean
-    external fun nativeCanRedo(spritePtr: Long): Boolean
-    external fun nativeExportPNG(spritePtr: Long, filePath: String): Boolean
-    external fun nativeExportGIF(spritePtr: Long, filePath: String): Boolean
-    external fun nativeExportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean
+    // These MUST match the JNI exports exactly
+    @Suppress("UNUSED_PARAMETER")
+    external fun initialize(): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun shutdown()
+    @Suppress("UNUSED_PARAMETER")
+    external fun createSprite(width: Int, height: Int, colorMode: Int): Long
+    @Suppress("UNUSED_PARAMETER")
+    external fun openSprite(filePath: String): Long
+    @Suppress("UNUSED_PARAMETER")
+    external fun saveSprite(spritePtr: Long, filePath: String): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun getWidth(spritePtr: Long): Int
+    @Suppress("UNUSED_PARAMETER")
+    external fun getHeight(spritePtr: Long): Int
+    @Suppress("UNUSED_PARAMETER")
+    external fun renderFrame(spritePtr: Long, frameIndex: Int): Bitmap?
+    @Suppress("UNUSED_PARAMETER")
+    external fun getFrameCount(spritePtr: Long): Int
+    @Suppress("UNUSED_PARAMETER")
+    external fun getLayerCount(spritePtr: Long): Int
+    @Suppress("UNUSED_PARAMETER")
+    external fun createLayer(spritePtr: Long, name: String): Long
+    @Suppress("UNUSED_PARAMETER")
+    external fun deleteLayer(spritePtr: Long, layerIndex: Int)
+    @Suppress("UNUSED_PARAMETER")
+    external fun getPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int): Int
+    @Suppress("UNUSED_PARAMETER")
+    external fun setPixel(spritePtr: Long, frame: Int, layer: Int, x: Int, y: Int, color: Int)
+    @Suppress("UNUSED_PARAMETER")
+    external fun undo(spritePtr: Long)
+    @Suppress("UNUSED_PARAMETER")
+    external fun redo(spritePtr: Long)
+    @Suppress("UNUSED_PARAMETER")
+    external fun canUndo(spritePtr: Long): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun canRedo(spritePtr: Long): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun exportPNG(spritePtr: Long, filePath: String): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun exportGIF(spritePtr: Long, filePath: String): Boolean
+    @Suppress("UNUSED_PARAMETER")
+    external fun exportSpriteSheet(spritePtr: Long, filePath: String, columns: Int): Boolean
     
     // Load native library
     init {

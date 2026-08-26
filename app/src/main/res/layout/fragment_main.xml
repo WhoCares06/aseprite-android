@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -73,32 +73,6 @@
                     android:text="@string/open_sprite"
                     android:layout_marginBottom="12dp"
                     style="@style/Widget.Material3.Button.ElevatedButton" />
-
-                <Button
-                    android:id="@+id/btnSaveSprite"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/save_sprite"
-                    android:layout_marginBottom="12dp"
-                    android:enabled="false"
-                    style="@style/Widget.Material3.Button.ElevatedButton" />
-
-                <Button
-                    android:id="@+id/btnExportPng"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/export_png"
-                    android:layout_marginBottom="12dp"
-                    android:enabled="false"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                <Button
-                    android:id="@+id/btnExportGif"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/export_gif"
-                    android:enabled="false"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
 

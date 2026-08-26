@@ -1,33 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <item
-        android:id="@+id/action_undo"
-        android:icon="@drawable/ic_undo"
-        android:title="@string/undo"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_redo"
-        android:icon="@drawable/ic_redo"
-        android:title="@string/redo"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_export_png"
-        android:icon="@drawable/ic_export"
-        android:title="@string/export_png"
+        android:id="@+id/action_about"
+        android:title="@string/about"
         app:showAsAction="never" />
-
     <item
-        android:id="@+id/action_export_gif"
-        android:title="@string/export_gif"
+        android:id="@+id/action_settings"
+        android:title="@string/settings"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_export_spritesheet"
-        android:title="@string/export_spritesheet"
-        app:showAsAction="never" />
-
 </menu>
