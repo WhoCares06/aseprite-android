@@ -27,7 +27,7 @@ class EditorFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         spritePtr = arguments?.getLong("spritePtr", 0) ?: 0
-        if (spritePtr == 0) {
+        if (spritePtr == 0L) {
             requireActivity().finish()
             return
         }
@@ -81,7 +81,7 @@ class EditorFragment : Fragment() {
 
     private fun drawAt(x: Int, y: Int) {
         val core = AsepriteCore.getInstance()
-        core.setPixel(spritePtr, currentFrame, 0, x, y, 0xFF000000) // Black for now
+        core.setPixel(spritePtr, currentFrame, 0, x, y, 0xFF000000.toInt()) // Black for now
         renderFrame()
     }
 

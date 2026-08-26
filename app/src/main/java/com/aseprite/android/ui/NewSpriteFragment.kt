@@ -1,11 +1,12 @@
 package com.aseprite.android.ui
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 
 class NewSpriteFragment : Fragment() {
     private var _binding: com.aseprite.android.databinding.FragmentNewSpriteBinding? = null

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.aseprite.android.R
 
 class MainFragment : Fragment() {
     private var _binding: com.aseprite.android.databinding.FragmentMainBinding? = null
