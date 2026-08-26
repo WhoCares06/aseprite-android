@@ -21,12 +21,12 @@ android {
             cmake {
                 cppFlags += "-std=c++17 -frtti -fexceptions"
                 arguments += "-DANDROID_STL=c++_shared"
-                targets = listOf("aseprite")
+                targets.add("aseprite")
             }
         }
 
         ndk {
-            abiFilters = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
         }
     }
 
@@ -51,7 +51,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            path = "src/main/cpp/CMakeLists.txt"
+            path = file("src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
         }
     }
