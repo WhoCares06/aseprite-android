@@ -38,10 +38,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3 git clang lld gn ninja-build
 
-      - name: Setup Android NDK
-        uses: android-actions/setup-android@v3
-        with:
-          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+      - name: Find NDK path
+        run: |
+          # GitHub runners have NDK pre-installed
+          NDK_PATHS=(
+            "/opt/android/ndk/${{ env.ANDROID_NDK_VERSION }}"
+            "/opt/android/ndk/r26d"
+            "/usr/local/lib/android/ndk/${{ env.ANDROID_NDK_VERSION }}"
+          )
+          for path in "${NDK_PATHS[@]}"; do
+            if [ -d "$path" ]; then
+              echo "NDK_ROOT=$path" >> $GITHUB_ENV
+              echo "Found NDK at: $path"
+              break
+            fi
+          done
+          if [ -z "$NDK_ROOT" ]; then
+            echo "NDK not found in standard locations, searching..."
+            find / -maxdepth 4 -name "ndk-build" -type f 2>/dev/null | head -5
+            ls -la /opt/android/ndk/ 2>/dev/null || true
+            ls -la /usr/local/lib/android/ndk/ 2>/dev/null || true
+            echo "NDK_ROOT=/opt/android/ndk/r26d" >> $GITHUB_ENV
+          fi
 
       - name: Sync Skia deps
         working-directory: skia
@@ -55,6 +73,8 @@ jobs:
 
       - name: Generate build files for Android arm64
         working-directory: skia
+        env:
+          NDK_ROOT: ${{ env.NDK_ROOT }}
         run: |
           bin/gn gen out/android_arm64 --args='
             target_os="android"
@@ -71,6 +91,7 @@ jobs:
             skia_use_fontconfig=false
             skia_use_freetype=true
             extra_cflags_cc=["-frtti"]
+            ndk="${NDK_ROOT}"
             ndk_api=24
           '
 
@@ -148,7 +169,6 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           api-level: ${{ env.ANDROID_SDK_VERSION }}
-          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
