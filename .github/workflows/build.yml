@@ -97,6 +97,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
 
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.5
+
       - name: Configure Skia paths
         run: |
           if [ -d "skia-prebuilt/arm64-v8a" ]; then
