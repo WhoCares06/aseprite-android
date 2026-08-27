@@ -21,7 +21,7 @@ android {
             cmake {
                 cppFlags += "-std=c++17 -frtti -fexceptions"
                 arguments += "-DANDROID_STL=c++_shared"
-                targets.add("aseprite")
+                targets.add("aseprite_core")
             }
         }
 
