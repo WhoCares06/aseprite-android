@@ -17,7 +17,7 @@ class OpenSpriteFragment : Fragment() {
     private val binding get() = _binding!!
     
     private val openDocumentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == requireActivity().RESULT_OK && result.data != null) {
+        if (result.resultCode == android.app.Activity.RESULT_OK && result.data != null) {
             val uri = result.data.data ?: return@registerForActivityResult
             openSpriteFromUri(uri)
         }
@@ -35,7 +35,10 @@ class OpenSpriteFragment : Fragment() {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "image/*"
-                putExtra(DocumentsContract.EXTRA_INITIAL_URI, requireActivity().getExternalFilesDir(null)?.toUri())
+                val initialDir = requireActivity().getExternalFilesDir(null)
+                if (initialDir != null) {
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.fromFile(initialDir))
+                }
             }
             openDocumentLauncher.launch(intent)
         }
