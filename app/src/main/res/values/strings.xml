@@ -2,6 +2,7 @@
     <string name="app_name">Aseprite Android</string>
     <string name="new_sprite">New Sprite</string>
     <string name="new_sprite_title">Create New Sprite</string>
+    <string name="editor_title">Editor</string>
     <string name="width">Width</string>
     <string name="height">Height</string>
     <string name="color_mode">Color Mode</string>

@@ -88,52 +88,15 @@ jobs:
 
       - name: Update CMakeLists with Skia paths
         run: |
-          cat > app/src/main/cpp/CMakeLists.txt << 'EOF'
-          cmake_minimum_required(VERSION 3.22.1)
-          project("aseprite-android" LANGUAGES CXX)
-
-          set(CMAKE_CXX_STANDARD 17)
-          set(CMAKE_CXX_STANDARD_REQUIRED ON)
-          set(CMAKE_CXX_EXTENSIONS OFF)
-
-          if(ANDROID)
-            set(CMAKE_ANDROID_STL c++_shared)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions -DANDROID")
-          endif()
-
-          set(SKIA_DIR "$ENV{SKIA_DIR_ARM64_V8A}")
-
-          if(NOT EXISTS ${SKIA_DIR}/libskia.so)
-            message(FATAL_ERROR "Skia not found at: ${SKIA_DIR}/libskia.so")
-          endif()
-
-          set(SKIA_LIBRARY ${SKIA_DIR}/libskia.so)
-          set(SKIA_INCLUDE_DIR ${SKIA_DIR}/include)
-
-          include_directories(
-            ${SKIA_INCLUDE_DIR}
-            ${CMAKE_SOURCE_DIR}/../../../aseprite-source/src
-            ${CMAKE_SOURCE_DIR}/../../../aseprite-source/third_party
-          )
-
-          add_library(aseprite_core STATIC aseprite_bridge.cpp)
-          add_library(aseprite SHARED jni_main.cpp)
-
-          target_link_libraries(aseprite
-            aseprite_core
-            ${SKIA_LIBRARY}
-            ${androidCMake_LIBRARIES}
-            log
-            android
-            EGL
-            GLESv3
-            dl
-          )
-
-          set_target_properties(aseprite PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../../../jniLibs/${ANDROID_ABI}
-          )
-          EOF
+          # Use the existing CMakeLists.txt from repo, just inject Skia paths
+          SKIA_DIR="${{ env.SKIA_DIR_ARM64_V8A }}"
+          if [ ! -f "$SKIA_DIR/libskia.so" ]; then
+            echo "Skia not found at: $SKIA_DIR/libskia.so"
+            exit 1
+          fi
+          # The repo's CMakeLists.txt already uses find_library for Skia
+          # Just ensure the env var is set for the build
+          echo "Using existing CMakeLists.txt with Skia at: $SKIA_DIR"
 
       - name: Build Debug APK
         run: |
