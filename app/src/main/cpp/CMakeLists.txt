@@ -13,11 +13,11 @@ if(ANDROID)
 endif()
 
 # Aseprite core library (pure C++, no JNI)
-add_library(aseprite_core STATIC
+add_library(aseprite_bridge STATIC
     aseprite_bridge.cpp
 )
 
-target_link_libraries(aseprite_core
+target_link_libraries(aseprite_bridge
     ${androidCmake_LIBRARIES}
     log
     android
@@ -29,7 +29,7 @@ add_library(aseprite_core SHARED
 )
 
 target_link_libraries(aseprite_core
-    aseprite_core
+    aseprite_bridge
     ${androidCmake_LIBRARIES}
     log
     android
